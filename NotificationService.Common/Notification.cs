@@ -1,15 +1,13 @@
 ﻿namespace NotificationService.Common
 {
-    using System;
-
-    public class Subscription
+    public class Notification
     {
-        public Guid UserId { get; set; }
-
         public string NotificationType { get; set; }
 
         public NotificationChannel Channel { get; set; }
 
-        public bool IsSubscribed { get; set; }
+        public string Header { get; set; }
+
+        public string Body { get; set; }
     }
 }
