@@ -1,4 +1,4 @@
-﻿namespace NotificationService.Common
+﻿namespace NotificationService.Common.Enums
 {
     public enum NotificationChannel
     {

@@ -1,8 +1,9 @@
-﻿namespace NotificationService.Common
+﻿namespace NotificationService.Common.DTOs
 {
     using System;
+    using NotificationService.Common.Enums;
 
-    public class DirectNotification
+    public class DirectNotificationDto
     {
         public Guid UserId { get; set; }
 

@@ -1,6 +1,8 @@
-﻿namespace NotificationService.Common
+﻿namespace NotificationService.Common.DTOs
 {
-    public class Notification
+    using NotificationService.Common.Enums;
+
+    public class NotificationDto
     {
         public string NotificationType { get; set; }
 
