@@ -16,6 +16,9 @@
         [Required]
         public string NotificationType { get; set; }
 
+        [Required]
+        public string EmailAddress { get; set; }
+
         public NotificationChannel Channel { get; set; }
 
         public bool IsSubscribed { get; set; }
