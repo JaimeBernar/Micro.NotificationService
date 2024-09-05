@@ -1,7 +1,9 @@
 namespace NotificationService
 {
-    using Microsoft.EntityFrameworkCore;
+    using Carter;
     using NotificationService.Data;
+    using NotificationService.Modules;
+    using NotificationService.Services;
 
     public static class Program
     {
@@ -12,9 +14,14 @@ namespace NotificationService
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<Context>();
-
+            builder.Services.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();
+            builder.Services.AddCarter(configurator: c =>
+            {
+                c.WithModule<NotificationsModule>();
+            });
 
             var app = builder.Build();
+            app.MapCarter();            
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
