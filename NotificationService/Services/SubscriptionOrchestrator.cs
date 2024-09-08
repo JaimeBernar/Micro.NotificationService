@@ -6,6 +6,7 @@
     using NotificationService.Data;
     using NotificationService.Extensions;
     using NotificationService.Models;
+    using System.Net;
 
     public class SubscriptionOrchestrator : ISubscriptionOrchestrator
     {
@@ -32,7 +33,6 @@
                 this.logger.LogError(message);
                 return Result.Fail(message);
             }
-
         }
 
         public async Task<Result<Subscription>> ProcessSubscription(SubscriptionMessage subscription)
@@ -61,6 +61,29 @@
             catch (Exception ex)
             {
                 var message = string.Format("An Error ocurred while processing the subscription. {error}", ex);
+                this.logger.LogError(message);
+                return Result.Fail(message);
+            }
+        }
+
+        public async Task<Result> DeleteSubscription(Guid subscriptionId)
+        {
+            try
+            {                
+                var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p => p.Id == subscriptionId);
+
+                if (existingSubscription != null)
+                {
+                    existingSubscription.IsSubscribed = false;
+                    await this.context.SaveChangesAsync();
+                    return Result.Ok();
+                }
+
+                return Result.Fail("No existing subscription with the specified id").WithStatusCode(HttpStatusCode.NotFound);
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("An Error ocurred while deleting the subscription. {error}", ex);
                 this.logger.LogError(message);
                 return Result.Fail(message);
             }

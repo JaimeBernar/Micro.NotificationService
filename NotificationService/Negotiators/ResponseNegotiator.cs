@@ -4,6 +4,7 @@
     using FluentResults;
     using FluentValidation.Results;
     using Microsoft.Net.Http.Headers;
+    using NotificationService.Extensions;
     using NotificationService.Models;
     using System.Net;
     using System.Text.Json;
@@ -41,7 +42,21 @@
                     return (HttpStatusCode.UnprocessableEntity, $"The Entity did NOT pass the validation process. {errors}");
 
                 case ResultBase result:
-                    return (result.IsSuccess ? HttpStatusCode.OK : HttpStatusCode.InternalServerError, string.Empty);
+
+                    var statusCode = HttpStatusCode.OK;
+
+                    var statusCodeReason = result.Reasons.OfType<StatusCodeReason>().FirstOrDefault();
+
+                    if (statusCodeReason != null)
+                    {
+                        statusCode = statusCodeReason.StatusCode;
+                    }
+                    else
+                    {
+                        statusCode = result.IsSuccess ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
+                    }
+
+                    return (statusCode, result.Reasons.ToJoinedString());
 
                 case Subscription subscription:
                     return (HttpStatusCode.OK, subscription);
