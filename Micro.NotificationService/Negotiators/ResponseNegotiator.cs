@@ -76,6 +76,9 @@
                 case IEnumerable<DirectNotification> directNotifications:
                     return (HttpStatusCode.OK, directNotifications);
 
+                case Exception ex:
+                    return (HttpStatusCode.InternalServerError, ex);
+
                 default:
                     throw new NotImplementedException($"The Response Negotiator can NOT handle the type {model.GetType()}");
             }
