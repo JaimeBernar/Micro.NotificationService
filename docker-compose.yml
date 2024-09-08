@@ -1,0 +1,16 @@
+services:
+  notification-service:
+    container_name: micro-notification-service
+    image: "micro.notification-service"
+    ports:
+      - 8080:8080
+    environment:
+      - EmailServer__Host=localhost
+      - EmailServer__Port=1025
+
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
