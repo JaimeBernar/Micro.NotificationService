@@ -1,7 +1,8 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-const apiUrl = 'http://localhost:8085/api/v1/notifications';
+const baseUrl = 'http://localhost:8085';
+//const baseUrl = 'http://localhost:5112'; //Debug
 
 export let options = {
     stages: [
@@ -11,31 +12,30 @@ export let options = {
 };
 
 export function setup() {
-    
-    const payload = JSON.stringify({
+
+    const apiUrl = `${baseUrl}/api/v1/subscriptions`;
+
+    const request = {
         userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         subscriberName: "TestSubscriber",
         emailAddress: "test@email.com",
         notificationType: "Type",
         channel: 0,
         isSubscribed: true
-    });
-
-    const params = {
-        headers: {
-            'Content-Type': 'application/json',
-        },
     };
 
-    const response = http.post(apiUrl, payload, params);
+    const response = http.post(apiUrl, JSON.stringify(request), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+
     check(response, {
         'POST request succeeded': (res) => res.status === 201 || res.status === 200,
     });
-
-    return response.json();
 }
 
 export default function () {
+
+    const apiUrl = `${baseUrl}/api/v1/notifications`;
 
     const request = {
         notificationType: "Type",
