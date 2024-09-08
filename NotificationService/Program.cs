@@ -1,6 +1,9 @@
 namespace NotificationService
 {
     using Carter;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Hosting;
+    using NotificationService.Data;
     using NotificationService.Extensions;
 
     public static class Program
@@ -16,6 +19,7 @@ namespace NotificationService
             builder.Services.AddServices();
 
             var app = builder.Build();
+            app.EnsureCreatedAndApplyMigrations();
             app.MapCarter();            
 
             // Configure the HTTP request pipeline.
@@ -28,6 +32,16 @@ namespace NotificationService
             app.UseHttpsRedirection();
 
             app.Run();
+        }
+
+        private static void EnsureCreatedAndApplyMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
+                //dbContext.Database.EnsureCreated();  
+                dbContext.Database.Migrate();        
+            }
         }
     }
 }

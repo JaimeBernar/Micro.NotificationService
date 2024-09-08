@@ -5,7 +5,6 @@
     using Carter.Response;
     using Microsoft.AspNetCore.Mvc;
     using NotificationService.Common.DTOs;
-    using NotificationService.Models;
     using NotificationService.Services;
     using System.Net;
 

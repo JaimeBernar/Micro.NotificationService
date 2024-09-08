@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Routing;
     using NotificationService.Common.DTOs;
+    using NotificationService.Models;
     using NotificationService.Services;
 
     public class NotificationsModule : ICarterModule
@@ -28,7 +29,15 @@
         {
             try
             {
+                var result = await orchestrator.GetUserNotifications(userId);
 
+                if (result.IsFailed)
+                {
+                    await context.Response.Negotiate(result);
+                    return;
+                }
+
+                await context.Response.Negotiate(result.Value);
             }
             catch (Exception ex)
             {
@@ -49,6 +58,15 @@
                     return;
                 }
 
+                var result = await orchestrator.ProcessNotification(notification);
+
+                if (result.IsFailed)
+                {
+                    await context.Response.Negotiate(result);
+                    return;
+                }
+
+                await context.Response.Negotiate(result);
             }
             catch (Exception ex)
             {
@@ -69,6 +87,15 @@
                     return;
                 }
 
+                var result = await orchestrator.ProcessDirectNotification(notification);
+
+                if (result.IsFailed)
+                {
+                    await context.Response.Negotiate(result);
+                    return;
+                }
+
+                await context.Response.Negotiate(result);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿namespace NotificationService.Services
 {
+    using FluentResults;
     using MailKit.Net.Smtp;
     using Microsoft.Extensions.Options;
     using MimeKit;
@@ -22,19 +23,19 @@
             this.emailServerOptions = options.Value;
         }
 
-        public Task SendEmail(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
+        public Task<Result> SendEmail(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
         {
             var messages = this.CreateMessages(groupedSubscriptions);
             return this.SendEmails(messages);
         }
 
-        public Task SendEmail(IEnumerable<DirectNotificationMessage> directNotifications)
+        public Task<Result> SendEmail(IEnumerable<DirectNotificationMessage> directNotifications)
         {
             var messages = this.CreateMessages(directNotifications);
             return this.SendEmails(messages);
         }
 
-        private async Task SendEmails(IEnumerable<MimeMessage> messages)
+        private async Task<Result> SendEmails(IEnumerable<MimeMessage> messages)
         {
             try
             {
@@ -46,10 +47,13 @@
                 var tasks = messagesList.Select(m => this.smtpClient.SendAsync(m));
 
                 await Task.WhenAll(tasks);
+                return Result.Ok();
             }
             catch (Exception ex)
             {
-                this.logger.LogError("An error ocurred while sending the Email. {error}", ex);
+                var message = string.Format("An error ocurred while sending the Email. {error}", ex);
+                this.logger.LogError(message);
+                return Result.Fail(message);
             }
             finally
             {

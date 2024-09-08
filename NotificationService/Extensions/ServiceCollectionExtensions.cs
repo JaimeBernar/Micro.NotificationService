@@ -6,6 +6,7 @@
     using NotificationService.Options;
     using NotificationService.Services;
     using NotificationService.Validators;
+    using System.Text;
 
     public static class ServiceCollectionExtensions
     {
@@ -25,6 +26,7 @@
             serviceCollection.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();
             serviceCollection.AddScoped<ISubscriptionOrchestrator, SubscriptionOrchestrator>();
             serviceCollection.AddScoped<IEmailService, EmailService>();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
         public static void AddOptions(this IServiceCollection serviceCollection, IConfiguration configuration)

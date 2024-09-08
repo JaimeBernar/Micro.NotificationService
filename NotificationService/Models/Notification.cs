@@ -6,6 +6,8 @@
     [Table(nameof(Notification))]
     public class Notification : Entity
     {
+        public Guid UserId { get; set; }
+
         public string NotificationType { get; set; }
 
         public NotificationChannel Channel { get; set; }
