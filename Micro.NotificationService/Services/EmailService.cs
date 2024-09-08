@@ -40,6 +40,13 @@
             try
             {
                 var messagesList = messages.ToList();
+
+                if (!messagesList.Any())
+                {
+                    this.logger.LogWarning("No messages were created for the specified Notifications");
+                    return Result.Ok();
+                }
+
                 this.logger.LogInformation("Sending {count} messages", messagesList.Count);
 
                 await this.smtpClient.ConnectAsync(this.emailServerOptions.Host, this.emailServerOptions.Port);

@@ -7,6 +7,7 @@
     using Microsoft.AspNetCore.Routing;
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
+    using System.Net;
 
     public class NotificationsModule : ICarterModule
     {
@@ -19,9 +20,17 @@
 
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/v1/notifications/{userId:guid}", this.GetUserNotifications);
-            app.MapPost("api/v1/notifications", this.PostNewNotification);
-            app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification);
+            app.MapGet("api/v1/notifications/{userId:guid}", this.GetUserNotifications)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/notifications", this.PostNewNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
         }
 
         public async Task GetUserNotifications(HttpContext context, Guid userId, [FromServices] INotificationOrchestrator orchestrator)
