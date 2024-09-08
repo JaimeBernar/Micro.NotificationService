@@ -58,7 +58,14 @@
         public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notifications)
         {
             // Check if a subscription for that notification type exist
-            var groupedSubscriptions = await this.GroupSubscriptionByNotification(notifications);
+            var (containValues, groupedSubscriptions) = await this.GroupSubscriptionByNotification(notifications);
+
+            if (!containValues)
+            {
+                //No subscriptions found, so call the logger and return a ok result as it can NOT be considered a failure
+                this.logger.LogWarning("No subscriptions found for the specified NotificationType in the Notifications");
+                return Result.Ok();
+            }
 
             var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
             var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
@@ -114,16 +121,28 @@
             return Result.Ok();
         }
 
-        private async Task<Dictionary<NotificationMessage, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
+        private async Task<(bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values)> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
             var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
+
+            if (!subscriptions.Any())
+            {
+                return (false, []);
+            }
 
             // Group subscriptions by notification
             var groupedSubscriptions = notifications
                 .GroupBy(n => n, n => subscriptions.Where(s => s.NotificationType == n.NotificationType && s.Channel == n.Channel))
                 .ToDictionary(g => g.Key, g => g.First());
 
-            return groupedSubscriptions;
+            if (!groupedSubscriptions.Any())
+            {
+                return (false, []);
+            }
+
+            var containValues = groupedSubscriptions.All(kvp => kvp.Value.Any());
+
+            return (containValues, groupedSubscriptions);
         }
     }
 }
