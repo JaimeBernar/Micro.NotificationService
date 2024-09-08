@@ -17,15 +17,18 @@
 
         private readonly IEmailService emailService;
 
+        private readonly IWebService webService;
+
         private readonly SettingsOptions settings;
 
         private readonly ILogger<NotificationOrchestrator> logger;
 
-        public NotificationOrchestrator(Context context, IEmailService emailService, IOptions<SettingsOptions> options,
-            ILogger<NotificationOrchestrator> logger)
+        public NotificationOrchestrator(Context context, IEmailService emailService, IWebService webService,
+            IOptions<SettingsOptions> options, ILogger<NotificationOrchestrator> logger)
         {
             this.context = context;
             this.emailService = emailService;
+            this.webService = webService;
             this.settings = options.Value;
             this.logger = logger;
         }
@@ -82,12 +85,12 @@
 
             if (this.settings.WebNotificationsActive)
             {
-                //var webResult = await this.emailService.SendEmail(webSubscriptions);
+                var webResult = await this.webService.SendWebNotification(webSubscriptions);
 
-                //if (webResult.IsFailed)
-                //{
-                //    return webResult;
-                //}
+                if (webResult.IsFailed)
+                {
+                    return webResult;
+                }
             }
 
             return Result.Ok();
@@ -110,12 +113,12 @@
 
             if (this.settings.WebNotificationsActive)
             {
-                //var webResult = await this.emailService.SendEmail(webSubscriptions);
+                var webResult = await this.webService.SendWebNotification(webSubscriptions);
 
-                //if (webResult.IsFailed)
-                //{
-                //    return webResult;
-                //}
+                if (webResult.IsFailed)
+                {
+                    return webResult;
+                }
             }
 
             return Result.Ok();
