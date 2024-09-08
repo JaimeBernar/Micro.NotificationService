@@ -2,7 +2,7 @@
 {
     using NotificationService.Common.Enums;
 
-    public class IncomingNotificationDto
+    public class NotificationMessage
     {
         public string NotificationType { get; set; }
 
@@ -15,7 +15,7 @@
         
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is IncomingNotificationDto other))
+            if (obj == null || !(obj is NotificationMessage other))
             {
                 return false;
             }

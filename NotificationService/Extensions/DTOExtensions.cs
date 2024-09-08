@@ -5,9 +5,9 @@ namespace NotificationService.Extensions
 {
     public static class DTOExtensions
     {
-        public static Subscription ToModel(this SubscriptionDto dto)
+        public static Models.Subscription ToModel(this Common.DTOs.SubscriptionMessage dto)
         {
-            return new Subscription
+            return new Models.Subscription
             {
                 UserId = dto.UserId,
                 NotificationType = dto.NotificationType,

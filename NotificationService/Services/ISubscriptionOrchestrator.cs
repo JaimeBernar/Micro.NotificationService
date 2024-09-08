@@ -4,6 +4,6 @@
 
     public interface ISubscriptionOrchestrator
     {
-        Task ProcessSubscription(SubscriptionDto subscription);
+        Task ProcessSubscription(SubscriptionMessage subscription);
     }
 }

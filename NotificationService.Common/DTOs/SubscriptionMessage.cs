@@ -3,9 +3,11 @@
     using System;
     using NotificationService.Common.Enums;
 
-    public class SubscriptionDto
+    public class SubscriptionMessage
     {
         public Guid UserId { get; set; }
+
+        public string SubscriberName { get; set; }
 
         public string EmailAddress { get; set; }
 
@@ -17,7 +19,7 @@
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is SubscriptionDto other))
+            if (obj == null || !(obj is SubscriptionMessage other))
             {
                 return false;
             }

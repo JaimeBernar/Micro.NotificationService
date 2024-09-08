@@ -14,7 +14,7 @@
             this.context = context;
         }
 
-        public async Task ProcessSubscription(SubscriptionDto subscription)
+        public async Task ProcessSubscription(SubscriptionMessage subscription)
         {
             // Check if the subscription already exist
             var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p => 

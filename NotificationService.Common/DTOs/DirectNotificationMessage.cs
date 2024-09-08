@@ -3,9 +3,11 @@
     using System;
     using NotificationService.Common.Enums;
 
-    public class DirectNotificationDto
+    public class DirectNotificationMessage
     {
         public Guid UserId { get; set; }
+
+        public string ReceiverName { get; set; }
 
         public string EmailAddress { get; set; }
 

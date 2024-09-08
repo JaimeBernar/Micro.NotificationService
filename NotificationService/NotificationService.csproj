@@ -24,4 +24,8 @@
     <ProjectReference Include="..\NotificationService.Common\NotificationService.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
 </Project>

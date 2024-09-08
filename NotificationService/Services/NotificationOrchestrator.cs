@@ -23,17 +23,17 @@
             this.settings = options.Value;
         }
 
-        public Task ProcessNotification(IncomingNotificationDto notification)
+        public Task ProcessNotification(NotificationMessage notification)
         {
             return this.ProcessNotifications([notification]);
         }
 
-        public Task ProcessDirectNotification(DirectNotificationDto notification)
+        public Task ProcessDirectNotification(DirectNotificationMessage notification)
         {
             return this.ProcessDirectNotifications([notification]);
         }
 
-        public async Task ProcessNotifications(IEnumerable<IncomingNotificationDto> notifications)
+        public async Task ProcessNotifications(IEnumerable<NotificationMessage> notifications)
         {
             // Check if a subscription for that notification type exist
             var groupedSubscriptions = await this.GroupSubscriptionByNotification(notifications);
@@ -52,7 +52,7 @@
             }
         }
 
-        public async Task ProcessDirectNotifications(IEnumerable<DirectNotificationDto> notifications)
+        public async Task ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notifications)
         {
             var emailSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
             var webSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
@@ -68,7 +68,7 @@
             }
         }
 
-        private async Task<Dictionary<IncomingNotificationDto, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<IncomingNotificationDto> notifications)
+        private async Task<Dictionary<NotificationMessage, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
             // Select distinct pairs of NotificationType and Channel to avoid duplicate queries
             var notificationPairs = notifications

@@ -22,13 +22,13 @@
             this.emailServerOptions = options.Value;
         }
 
-        public Task SendEmail(Dictionary<IncomingNotificationDto, IEnumerable<Subscription>> groupedSubscriptions)
+        public Task SendEmail(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
         {
             var messages = this.CreateMessages(groupedSubscriptions);
             return this.SendEmails(messages);
         }
 
-        public Task SendEmail(IEnumerable<DirectNotificationDto> directNotifications)
+        public Task SendEmail(IEnumerable<DirectNotificationMessage> directNotifications)
         {
             var messages = this.CreateMessages(directNotifications);
             return this.SendEmails(messages);
@@ -57,7 +57,7 @@
             }
         }
 
-        private IEnumerable<MimeMessage> CreateMessages(Dictionary<IncomingNotificationDto, IEnumerable<Subscription>> groupedSubscriptions)
+        private IEnumerable<MimeMessage> CreateMessages(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
         {
             var messages = new List<MimeMessage>();
 
@@ -86,7 +86,7 @@
             return messages;
         }
 
-        private IEnumerable<MimeMessage> CreateMessages(IEnumerable<DirectNotificationDto> directNotifications)
+        private IEnumerable<MimeMessage> CreateMessages(IEnumerable<DirectNotificationMessage> directNotifications)
         {
             var messages = new List<MimeMessage>();
 
