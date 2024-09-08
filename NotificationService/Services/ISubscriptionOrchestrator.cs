@@ -1,9 +1,13 @@
 ﻿namespace NotificationService.Services
 {
+    using FluentResults;
     using NotificationService.Common.DTOs;
+    using NotificationService.Models;
 
     public interface ISubscriptionOrchestrator
     {
-        Task ProcessSubscription(SubscriptionMessage subscription);
+        Task<Result<IEnumerable<Subscription>>> GetUserSubscriptions(Guid userId);
+
+        Task<Result<Subscription>> ProcessSubscription(SubscriptionMessage subscription);
     }
 }

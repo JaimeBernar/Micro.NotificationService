@@ -5,6 +5,7 @@
     using NotificationService.Modules;
     using NotificationService.Options;
     using NotificationService.Services;
+    using NotificationService.Validators;
 
     public static class ServiceCollectionExtensions
     {
@@ -16,6 +17,9 @@
             {
                 c.WithModule<NotificationsModule>();
                 c.WithModule<SubscriptionsModule>();
+                c.WithValidator<SubscriptionMessageValidator>();
+                c.WithValidator<NotificationMessageValidator>();
+                c.WithValidator<DirectNotificationMessageValidator>();
             });
 
             serviceCollection.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();

@@ -2,14 +2,12 @@
 {
     using System;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
     using NotificationService.Common.Enums;
 
-    public class Subscription
+    [Table(nameof(Subscription))]
+    public class Subscription : Entity
     {
-        [Required]
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
         [Required]
         public Guid UserId { get; set; }
 

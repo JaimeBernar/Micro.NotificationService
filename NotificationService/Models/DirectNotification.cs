@@ -2,14 +2,11 @@
 {
     using NotificationService.Common.Enums;
     using System;
-    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
-    public class DirectNotification
+    [Table(nameof(DirectNotification))]
+    public class DirectNotification : Entity
     {
-        [Required]
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
         public Guid UserId { get; set; }
 
         public string ReceiverName { get; set; }

@@ -1,14 +1,11 @@
 ﻿namespace NotificationService.Models
 {
     using NotificationService.Common.Enums;
-    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
-    public class Notification
+    [Table(nameof(Notification))]
+    public class Notification : Entity
     {
-        [Required]
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
         public string NotificationType { get; set; }
 
         public NotificationChannel Channel { get; set; }
