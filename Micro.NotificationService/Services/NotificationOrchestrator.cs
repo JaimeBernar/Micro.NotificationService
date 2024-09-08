@@ -75,12 +75,12 @@
 
             if (this.settings.WebNotificationsActive)
             {
-                var webResult = await this.emailService.SendEmail(webSubscriptions);
+                //var webResult = await this.emailService.SendEmail(webSubscriptions);
 
-                if (webResult.IsFailed)
-                {
-                    return webResult;
-                }
+                //if (webResult.IsFailed)
+                //{
+                //    return webResult;
+                //}
             }
 
             return Result.Ok();
@@ -103,12 +103,12 @@
 
             if (this.settings.WebNotificationsActive)
             {
-                var webResult = await this.emailService.SendEmail(webSubscriptions);
+                //var webResult = await this.emailService.SendEmail(webSubscriptions);
 
-                if (webResult.IsFailed)
-                {
-                    return webResult;
-                }
+                //if (webResult.IsFailed)
+                //{
+                //    return webResult;
+                //}
             }
 
             return Result.Ok();
@@ -116,8 +116,7 @@
 
         private async Task<Dictionary<NotificationMessage, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
-            // Query subscriptions in a single batch query
-            var subscriptions = await this.context.Subscriptions.ToListAsync();
+            var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
 
             // Group subscriptions by notification
             var groupedSubscriptions = notifications
