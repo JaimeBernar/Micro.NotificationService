@@ -1,10 +1,12 @@
 ﻿namespace NotificationService.Services
 {
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
     using NotificationService.Common.DTOs;
     using NotificationService.Common.Enums;
     using NotificationService.Data;
     using NotificationService.Models;
+    using NotificationService.Options;
 
     public class NotificationOrchestrator : INotificationOrchestrator
     {
@@ -12,10 +14,13 @@
 
         private readonly IEmailService emailService;
 
-        public NotificationOrchestrator(Context context, IEmailService emailService)
+        private readonly SettingsOptions settings;
+
+        public NotificationOrchestrator(Context context, IEmailService emailService, IOptions<SettingsOptions> options)
         {
             this.context = context;
             this.emailService = emailService;
+            this.settings = options.Value;
         }
 
         public Task ProcessNotification(IncomingNotificationDto notification)
@@ -33,17 +38,33 @@
             // Check if a subscription for that notification type exist
             var groupedSubscriptions = await this.GroupSubscriptionByNotification(notifications);
 
-            var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email);
-            var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email);
+            var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
+            var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
 
-            this.emailService.
+            if (this.settings.EmailNotificationsActive)
+            {
+                await this.emailService.SendEmail(emailSubscriptions);
+            }
+
+            if (this.settings.WebNotificationsActive)
+            {
+                await this.emailService.SendEmail(webSubscriptions);
+            }
         }
 
         public async Task ProcessDirectNotifications(IEnumerable<DirectNotificationDto> notifications)
         {
-            foreach(var notification in notifications)
-            {
+            var emailSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
+            var webSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
 
+            if (this.settings.EmailNotificationsActive)
+            {
+                await this.emailService.SendEmail(emailSubscriptions);
+            }
+
+            if (this.settings.WebNotificationsActive)
+            {
+                await this.emailService.SendEmail(webSubscriptions);
             }
         }
 

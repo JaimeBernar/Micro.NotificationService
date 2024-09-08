@@ -1,9 +1,7 @@
 namespace NotificationService
 {
     using Carter;
-    using NotificationService.Data;
-    using NotificationService.Modules;
-    using NotificationService.Services;
+    using NotificationService.Extensions;
 
     public static class Program
     {
@@ -13,16 +11,9 @@ namespace NotificationService
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<Context>();
-            builder.Services.AddCarter(configurator: c =>
-            {
-                c.WithModule<NotificationsModule>();
-                c.WithModule<SubscriptionsModule>();
-            });
 
-            builder.Services.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();
-            builder.Services.AddScoped<ISubscriptionOrchestrator, SubscriptionOrchestrator>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddOptions(builder.Configuration);
+            builder.Services.AddServices();
 
             var app = builder.Build();
             app.MapCarter();            
