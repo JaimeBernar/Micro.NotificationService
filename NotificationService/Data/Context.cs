@@ -13,7 +13,8 @@
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=database.db");
+            var path = Path.Combine("Data", "database.db");
+            optionsBuilder.UseSqlite($"Data Source={path}");
         }
     }
 }

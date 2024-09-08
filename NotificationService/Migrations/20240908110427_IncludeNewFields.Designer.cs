@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NotificationService.Data;
 
@@ -10,9 +11,11 @@ using NotificationService.Data;
 namespace NotificationService.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240908110427_IncludeNewFields")]
+    partial class IncludeNewFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -43,7 +46,7 @@ namespace NotificationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DirectNotification");
+                    b.ToTable("DirectNotifications");
                 });
 
             modelBuilder.Entity("NotificationService.Models.Notification", b =>
@@ -64,12 +67,9 @@ namespace NotificationService.Migrations
                     b.Property<string>("NotificationType")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Notification");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("NotificationService.Models.Subscription", b =>
@@ -100,7 +100,7 @@ namespace NotificationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subscription");
+                    b.ToTable("Subscriptions");
                 });
 #pragma warning restore 612, 618
         }

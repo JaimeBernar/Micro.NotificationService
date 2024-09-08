@@ -1,10 +1,15 @@
 ﻿namespace NotificationService.Services
 {
+    using FluentResults;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
     using NotificationService.Common.DTOs;
     using NotificationService.Common.Enums;
     using NotificationService.Data;
     using NotificationService.Models;
+    using NotificationService.Options;
+
+    using Notification = NotificationService.Models.Notification;
 
     public class NotificationOrchestrator : INotificationOrchestrator
     {
@@ -12,53 +17,107 @@
 
         private readonly IEmailService emailService;
 
-        public NotificationOrchestrator(Context context, IEmailService emailService)
+        private readonly SettingsOptions settings;
+
+        private readonly ILogger<NotificationOrchestrator> logger;
+
+        public NotificationOrchestrator(Context context, IEmailService emailService, IOptions<SettingsOptions> options,
+            ILogger<NotificationOrchestrator> logger)
         {
             this.context = context;
             this.emailService = emailService;
+            this.settings = options.Value;
+            this.logger = logger;
         }
 
-        public Task ProcessNotification(IncomingNotificationDto notification)
+        public async Task<Result<IEnumerable<Notification>>> GetUserNotifications(Guid userId)
+        {
+            try
+            {
+                var result = await this.context.Notifications.Where(x => x.UserId == userId).ToArrayAsync();
+                return Result.Ok<IEnumerable<Notification>>(result);
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("An Error ocurred while getting user notifications. {error}", ex);
+                this.logger.LogError(message);
+                return Result.Fail(message);
+            }
+        }
+
+        public Task<Result> ProcessNotification(NotificationMessage notification)
         {
             return this.ProcessNotifications([notification]);
         }
 
-        public Task ProcessDirectNotification(DirectNotificationDto notification)
+        public Task<Result> ProcessDirectNotification(DirectNotificationMessage notification)
         {
             return this.ProcessDirectNotifications([notification]);
         }
 
-        public async Task ProcessNotifications(IEnumerable<IncomingNotificationDto> notifications)
+        public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notifications)
         {
             // Check if a subscription for that notification type exist
             var groupedSubscriptions = await this.GroupSubscriptionByNotification(notifications);
 
-            var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email);
-            var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email);
+            var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
+            var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
 
-            this.emailService.
-        }
-
-        public async Task ProcessDirectNotifications(IEnumerable<DirectNotificationDto> notifications)
-        {
-            foreach(var notification in notifications)
+            if (this.settings.EmailNotificationsActive)
             {
+                var emailResult = await this.emailService.SendEmail(emailSubscriptions);
 
+                if (emailResult.IsFailed)
+                {
+                    return emailResult;
+                }
             }
+
+            if (this.settings.WebNotificationsActive)
+            {
+                var webResult = await this.emailService.SendEmail(webSubscriptions);
+
+                if (webResult.IsFailed)
+                {
+                    return webResult;
+                }
+            }
+
+            return Result.Ok();
         }
 
-        private async Task<Dictionary<IncomingNotificationDto, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<IncomingNotificationDto> notifications)
+        public async Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notifications)
         {
-            // Select distinct pairs of NotificationType and Channel to avoid duplicate queries
-            var notificationPairs = notifications
-                .Select(n => new { n.NotificationType, n.Channel })
-                .Distinct()
-                .ToList();
+            var emailSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
+            var webSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
 
+            if (this.settings.EmailNotificationsActive)
+            {
+                var emailResult = await this.emailService.SendEmail(emailSubscriptions);
+
+                if (emailResult.IsFailed)
+                {
+                    return emailResult;
+                }
+            }
+
+            if (this.settings.WebNotificationsActive)
+            {
+                var webResult = await this.emailService.SendEmail(webSubscriptions);
+
+                if (webResult.IsFailed)
+                {
+                    return webResult;
+                }
+            }
+
+            return Result.Ok();
+        }
+
+        private async Task<Dictionary<NotificationMessage, IEnumerable<Subscription>>> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
+        {
             // Query subscriptions in a single batch query
-            var subscriptions = await this.context.Subscriptions
-                .Where(s => notificationPairs.Contains(new { s.NotificationType, s.Channel }))
-                .ToListAsync();
+            var subscriptions = await this.context.Subscriptions.ToListAsync();
 
             // Group subscriptions by notification
             var groupedSubscriptions = notifications
