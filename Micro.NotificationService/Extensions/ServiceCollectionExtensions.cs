@@ -28,6 +28,7 @@
             serviceCollection.AddScoped<ISubscriptionOrchestrator, SubscriptionOrchestrator>();
             serviceCollection.AddScoped<IEmailService, EmailService>();
             serviceCollection.AddScoped<IWebService, WebService>();
+            serviceCollection.AddSingleton<WebNotificationBatcher>();
             serviceCollection.AddSignalR();
 
             serviceCollection.AddResponseCompression(opts =>

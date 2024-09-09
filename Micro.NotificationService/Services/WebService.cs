@@ -2,22 +2,23 @@
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Common.SignalR;
     using Micro.NotificationService.Models;
     using Microsoft.AspNetCore.SignalR;
-
+    using System.Threading.Tasks;
     using Notification = Micro.NotificationService.Common.DTOs.Notification;
 
-    public class WebService : Hub, IWebService
+    public class WebService : IWebService
     {
         private readonly ILogger<WebService> logger;
 
         private IHubContext<NotificationsHub> hub;
 
-        public WebService(ILogger<WebService> logger, IHubContext<NotificationsHub> hub)
+        private WebNotificationBatcher batcher;
+
+        public WebService(ILogger<WebService> logger, WebNotificationBatcher batcher)
         {
             this.logger = logger;
-            this.hub = hub;
+            this.batcher = batcher;
         }
 
         public async Task<Result> SendWebNotification(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
@@ -39,12 +40,16 @@
 
                     foreach (var subscription in subscriptions)
                     {
-                        var userId = subscription.UserId.ToString();
-                        tasks.Add(this.hub.Clients?.All.SendAsync(NotificationMethodNames.Receive, notification));
+                        var userId = subscription.UserId.ToString();                        
+                        this.batcher.AddBatchedNotification(userId, notification);
                     }
                 }
+                
+                if(this.batcher.ShouldProcessBatchedNotifications())
+                {
+                    await this.batcher.ProcessBatchedNotifications();
+                }
 
-                await Task.WhenAll(tasks);
                 return Result.Ok();
             }
             catch (Exception ex)
@@ -71,10 +76,14 @@
                         Header = directNotification.Header,
                     };
 
-                    tasks.Add(this.hub.Clients?.All.SendAsync(NotificationMethodNames.Receive, notification));
+                    this.batcher.AddBatchedNotification(userId, notification);
                 }
 
-                await Task.WhenAll(tasks);
+                if (this.batcher.ShouldProcessBatchedNotifications())
+                {
+                    await this.batcher.ProcessBatchedNotifications();
+                }
+
                 return Result.Ok();
             }
             catch (Exception ex)

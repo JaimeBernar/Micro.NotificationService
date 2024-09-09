@@ -23,10 +23,10 @@ namespace Micro.NotificationService.Web.Pages
                 .WithAutomaticReconnect()
                 .Build();
 
-            this.HubConnection.On<Notification>(NotificationMethodNames.Receive, (notification) =>
+            this.HubConnection.On<IEnumerable<Notification>>(NotificationMethodNames.Receive, async (notifications) =>
             {
-                this.notifications.Add(notification);
-                this.InvokeAsync(this.StateHasChanged);
+                this.notifications.AddRange(notifications);
+                await this.InvokeAsync(this.StateHasChanged);
             });
 
             await this.HubConnection.StartAsync();

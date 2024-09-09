@@ -6,8 +6,8 @@ const baseUrl = 'http://localhost:5112'; //Debug
 
 export let options = {
     stages: [
-        { duration: '10s', target: 1 },  // Ramp-up to 20 users
-          // Ramp-up to 20 users
+        { duration: '10s', target: 20 },  // Ramp-up to 20 users
+        { duration: '50s', target: 20 },  // Ramp-up to 20 users
     ],
 };
 
