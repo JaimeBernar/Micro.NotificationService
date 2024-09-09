@@ -2,6 +2,7 @@
 using Micro.NotificationService.Common.SignalR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Radzen;
 
 namespace Micro.NotificationService.Web.Pages
 {
@@ -30,6 +31,30 @@ namespace Micro.NotificationService.Web.Pages
             });
 
             await this.HubConnection.StartAsync();
+        }
+
+        private async Task OnConnectedClicked()
+        {
+            if(this.HubConnection.State == HubConnectionState.Connected)
+            {
+                await this.HubConnection.StopAsync();
+            }
+            else if(this.HubConnection.State == HubConnectionState.Disconnected)
+            {
+                await this.HubConnection.StartAsync();
+            }
+        }
+
+        private string GetIconColor()
+        {
+            return this.HubConnection.State switch
+            {
+                HubConnectionState.Disconnected => Colors.Secondary,
+                HubConnectionState.Connected => Colors.Success,
+                HubConnectionState.Connecting => Colors.Warning,
+                HubConnectionState.Reconnecting => Colors.Warning,
+                _ => Colors.Secondary,
+            };
         }
     }
 }
