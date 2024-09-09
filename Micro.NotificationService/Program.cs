@@ -8,6 +8,10 @@ namespace Micro.NotificationService
     using Microsoft.Extensions.Options;
     using Micro.NotificationService.Options;
     using Serilog;
+    using Micro.NotificationService.Services;
+    using Micro.NotificationService.Common.SignalR;
+    using Microsoft.AspNetCore.Hosting.Server.Features;
+    using Microsoft.AspNetCore.Hosting.Server;
 
     public class Program
     {
@@ -30,11 +34,16 @@ namespace Micro.NotificationService
             try
             {
                 var app = builder.Build();
+                if (!app.Environment.IsDevelopment())
+                {
+                    //Needs to be immediately after building the app
+                    app.UseResponseCompression();
+                }
 
                 logger = app.Services.GetRequiredService<ILogger<Program>>();
                 var settings = app.Services.GetRequiredService<IOptions<SettingsOptions>>().Value;
                 var serverOptions = app.Services.GetRequiredService<IOptions<EmailServerOptions>>().Value;
-
+                                
                 logger.LogInformation("Logging Configuration");
                 logger.LogInformation("Settings:");
                 logger.LogInformation($"{nameof(SettingsOptions.EmailNotificationsActive)}={settings.EmailNotificationsActive}");
@@ -48,6 +57,8 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
                 EnsureCreatedAndApplyMigrations(app);
+                //app.UseRouting();
+                app.UseCors("Cors");
                 app.MapCarter();
 
                 // Configure the HTTP request pipeline.
@@ -59,6 +70,7 @@ namespace Micro.NotificationService
 
                 app.UseHttpsRedirection();
 
+                app.MapHub<NotificationsHub>(NotificationMethodNames.HubUrl);
                 app.Run();
             }
             catch (Exception ex)

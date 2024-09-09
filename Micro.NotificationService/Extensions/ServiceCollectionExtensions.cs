@@ -6,6 +6,7 @@
     using Micro.NotificationService.Options;
     using Micro.NotificationService.Services;
     using Micro.NotificationService.Validators;
+    using Microsoft.AspNetCore.ResponseCompression;
     using System.Text;
 
     public static class ServiceCollectionExtensions
@@ -27,6 +28,23 @@
             serviceCollection.AddScoped<ISubscriptionOrchestrator, SubscriptionOrchestrator>();
             serviceCollection.AddScoped<IEmailService, EmailService>();
             serviceCollection.AddScoped<IWebService, WebService>();
+            serviceCollection.AddSignalR();
+
+            serviceCollection.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
+            });
+
+            serviceCollection.AddCors(options =>
+            {
+                options.AddPolicy("Cors", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+            });
+
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 

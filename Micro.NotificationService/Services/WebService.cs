@@ -12,9 +12,12 @@
     {
         private readonly ILogger<WebService> logger;
 
-        public WebService(ILogger<WebService> logger)
+        private IHubContext<NotificationsHub> hub;
+
+        public WebService(ILogger<WebService> logger, IHubContext<NotificationsHub> hub)
         {
             this.logger = logger;
+            this.hub = hub;
         }
 
         public async Task<Result> SendWebNotification(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
@@ -37,7 +40,7 @@
                     foreach (var subscription in subscriptions)
                     {
                         var userId = subscription.UserId.ToString();
-                        tasks.Add(this.Clients.User(userId).SendAsync(NotificationQueues.ReceiveQueue, notification));
+                        tasks.Add(this.hub.Clients?.All.SendAsync(NotificationMethodNames.Receive, notification));
                     }
                 }
 
@@ -68,7 +71,7 @@
                         Header = directNotification.Header,
                     };
 
-                    tasks.Add(this.Clients.User(userId).SendAsync(NotificationQueues.ReceiveQueue, notification));
+                    tasks.Add(this.hub.Clients?.All.SendAsync(NotificationMethodNames.Receive, notification));
                 }
 
                 await Task.WhenAll(tasks);
