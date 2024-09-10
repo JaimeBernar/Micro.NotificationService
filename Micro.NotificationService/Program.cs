@@ -29,7 +29,7 @@ namespace Micro.NotificationService
                 configuration.ReadFrom.Configuration(builder.Configuration);
             });
 
-            ILogger<Program> logger = null;
+            ILogger<Program> logger = null!;
 
             try
             {
@@ -70,7 +70,7 @@ namespace Micro.NotificationService
 
                 app.UseHttpsRedirection();
 
-                app.MapHub<NotificationsHub>(NotificationMethodNames.HubUrl);
+                app.MapHub<NotificationsHub>(settings.NotificationsHubPath);
                 app.Run();
             }
             catch (Exception ex)

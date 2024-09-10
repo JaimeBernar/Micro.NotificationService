@@ -2,8 +2,6 @@
 {
     public class NotificationMethodNames
     {
-        public const string HubUrl = "/notifications";
-
         public const string Receive = "ReceiveNotification";
 
         public const string Readed = "NotificationReaded";

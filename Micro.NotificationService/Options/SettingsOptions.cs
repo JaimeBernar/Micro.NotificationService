@@ -11,5 +11,7 @@
         public int BatchSize { get; set; }
 
         public int BatchTime { get; set; }
+
+        public string NotificationsHubPath { get; set; }
     }
 }
