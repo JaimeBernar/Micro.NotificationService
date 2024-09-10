@@ -20,7 +20,8 @@
         <RadzenPanelMenu>
             <RadzenPanelMenuItem Text="Delete all notifications"
                                  Icon="delete"
-                                 IconColor="@Colors.Danger" />
+                                 IconColor="@Colors.Danger" 
+                                 Click="@(async () => await this.DeleteAll())"/>
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>

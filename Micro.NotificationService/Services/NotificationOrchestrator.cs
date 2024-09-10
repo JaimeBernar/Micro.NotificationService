@@ -73,10 +73,15 @@
 
         private async Task<Result> ProcessAndSaveNotifications(IEnumerable<Notification> notifications)
         {
+            if (!notifications.Any())
+            {
+                return Result.Fail("No Notifications to process");
+            }
+
             var emailNotifications = notifications.Where(x => x.Channel == NotificationChannel.Email);
             var webNotifications = notifications.Where(x => x.Channel == NotificationChannel.Web);
 
-            this.context.Notifications.AddRange(emailNotifications);
+            this.context.Notifications.AddRange(notifications);
             var savedNotifications = await this.context.SaveChangesAsync();
 
             if(notifications.ToList().Count != savedNotifications)

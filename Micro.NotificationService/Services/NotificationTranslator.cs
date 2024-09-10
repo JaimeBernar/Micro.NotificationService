@@ -18,7 +18,7 @@
         {
             var (containValues, groupedByNotifications) = await this.GroupSubscriptionByNotification(notificationMessages);
 
-            if (containValues)
+            if (!containValues)
             {
                 return [];
             }
@@ -37,10 +37,12 @@
                     var notification = new Notification
                     {
                         UserId = userId,
-                        Body = notificationMessage.Body,
-                        Header = notificationMessage.Header,
-                        Channel = subscription.Channel,
+                        ReceiverName = subscription.SubscriberName,
+                        EmailAddress = subscription.EmailAddress,
                         NotificationType = subscription.NotificationType,
+                        Channel = subscription.Channel,
+                        Header = notificationMessage.Header,
+                        Body = notificationMessage.Body,
                     };
 
                     result.Add(notification);
@@ -59,11 +61,12 @@
                 var notification = new Notification
                 {
                     UserId = directNotification.UserId,
-                    Body = directNotification.Body,
-                    Header = directNotification.Header,
-                    Channel = directNotification.Channel,
                     ReceiverName = directNotification.ReceiverName,
                     EmailAddress = directNotification.EmailAddress,
+                    NotificationType = directNotification.NotificationType,
+                    Channel = directNotification.Channel,
+                    Header = directNotification.Header,
+                    Body = directNotification.Body,
                     IsDirect = true,
                 };
 
@@ -84,7 +87,7 @@
 
             // Group subscriptions by notification
             var groupedSubscriptions = notifications
-                .GroupBy(n => n, n => subscriptions.Where(s => s.NotificationType == n.NotificationType && s.Channel == n.Channel))
+                .GroupBy(n => n, n => subscriptions.Where(s => s.NotificationType == n.NotificationType))
                 .ToDictionary(g => g.Key, g => g.First());
 
             if (!groupedSubscriptions.Any())
