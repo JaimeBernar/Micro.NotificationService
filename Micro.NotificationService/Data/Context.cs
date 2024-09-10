@@ -3,7 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using Micro.NotificationService.Models;
 
-    public class Context : DbContext
+    public class Context(DbContextOptions<Context> options) : DbContext(options)
     {
         public DbSet<Notification> Notifications { get; set; }
 
