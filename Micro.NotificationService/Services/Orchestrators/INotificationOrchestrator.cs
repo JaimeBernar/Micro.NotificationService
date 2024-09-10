@@ -1,9 +1,9 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Orchestrators
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
 
-    using Notification = Micro.NotificationService.Models.Notification;
+    using Notification = Models.Notification;
 
     public interface INotificationOrchestrator
     {

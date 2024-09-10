@@ -1,10 +1,9 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Email
 {
     using FluentResults;
     using MailKit.Net.Smtp;
     using Microsoft.Extensions.Options;
     using MimeKit;
-    using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
 
@@ -18,9 +17,9 @@
 
         public EmailService(ILogger<EmailService> logger, IOptions<EmailServerOptions> options)
         {
-            this.smtpClient = new SmtpClient();
+            smtpClient = new SmtpClient();
             this.logger = logger;
-            this.emailServerOptions = options.Value;
+            emailServerOptions = options.Value;
         }
 
         public async Task<Result> SendEmailNotification(IEnumerable<Notification> notifications)
@@ -29,10 +28,10 @@
 
             if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Email))
             {
-                this.logger.LogWarning("Notifications that should NOT produce email notifications are being passed to {name}", nameof(EmailService));
+                logger.LogWarning("Notifications that should NOT produce email notifications are being passed to {name}", nameof(EmailService));
             }
 
-            var messages = this.CreateMessages(emailNotifications);
+            var messages = CreateMessages(emailNotifications);
 
             try
             {
@@ -40,15 +39,15 @@
 
                 if (!messagesList.Any())
                 {
-                    this.logger.LogWarning("No messages were created for the specified Notifications");
+                    logger.LogWarning("No messages were created for the specified Notifications");
                     return Result.Ok();
                 }
 
-                this.logger.LogInformation("Sending {count} messages", messagesList.Count);
+                logger.LogInformation("Sending {count} messages", messagesList.Count);
 
-                await this.smtpClient.ConnectAsync(this.emailServerOptions.Host, this.emailServerOptions.Port);
+                await smtpClient.ConnectAsync(emailServerOptions.Host, emailServerOptions.Port);
 
-                var tasks = messagesList.Select(m => this.smtpClient.SendAsync(m));
+                var tasks = messagesList.Select(m => smtpClient.SendAsync(m));
 
                 await Task.WhenAll(tasks);
                 return Result.Ok();
@@ -56,12 +55,12 @@
             catch (Exception ex)
             {
                 var message = string.Format("An error ocurred while sending the Email. {error}", ex);
-                this.logger.LogError(message);
+                logger.LogError(message);
                 return Result.Fail(message);
             }
             finally
             {
-                await this.smtpClient.DisconnectAsync(true);
+                await smtpClient.DisconnectAsync(true);
             }
         }
 
@@ -73,9 +72,9 @@
             {
                 var message = new MimeMessage();
 
-                if (this.emailServerOptions.UseSenderInfo)
+                if (emailServerOptions.UseSenderInfo)
                 {
-                    message.From.Add(new MailboxAddress(this.emailServerOptions.EmailSenderName, this.emailServerOptions.EmailSenderAddress));
+                    message.From.Add(new MailboxAddress(emailServerOptions.EmailSenderName, emailServerOptions.EmailSenderAddress));
                 }
 
                 var receiverName = notification.ReceiverName ?? "Receiver";
@@ -98,7 +97,7 @@
 
         public void Dispose()
         {
-            this.smtpClient.Dispose();
+            smtpClient.Dispose();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Web
 {
     using FluentResults;
     using Micro.NotificationService.Models;

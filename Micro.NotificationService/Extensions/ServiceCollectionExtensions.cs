@@ -4,7 +4,10 @@
     using Micro.NotificationService.Data;
     using Micro.NotificationService.Modules;
     using Micro.NotificationService.Options;
-    using Micro.NotificationService.Services;
+    using Micro.NotificationService.Services.Email;
+    using Micro.NotificationService.Services.Orchestrators;
+    using Micro.NotificationService.Services.Translator;
+    using Micro.NotificationService.Services.Web;
     using Micro.NotificationService.Validators;
     using Microsoft.AspNetCore.ResponseCompression;
     using System.Text;

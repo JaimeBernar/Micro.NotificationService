@@ -1,10 +1,9 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Email
 {
     using FluentResults;
-    using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Models;
 
-    public interface IEmailService 
+    public interface IEmailService
     {
         Task<Result> SendEmailNotification(IEnumerable<Notification> notifications);
     }

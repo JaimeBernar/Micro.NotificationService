@@ -1,4 +1,4 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Translator
 {
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Models;

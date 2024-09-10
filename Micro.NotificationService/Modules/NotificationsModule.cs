@@ -6,9 +6,9 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Routing;
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Services;
     using System.Net;
     using Micro.NotificationService.Models;
+    using Micro.NotificationService.Services.Orchestrators;
 
     public class NotificationsModule : ICarterModule
     {

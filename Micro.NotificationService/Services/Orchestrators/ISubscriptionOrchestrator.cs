@@ -1,4 +1,4 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Orchestrators
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;

@@ -1,4 +1,4 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Web
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
@@ -23,9 +23,9 @@
             {
                 var webNotifications = notifications.Where(x => x.Channel == Common.Enums.NotificationChannel.Web);
 
-                if(notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Web))
+                if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Web))
                 {
-                    this.logger.LogWarning("Notifications that should NOT produce web notifications are being passed to {name}", nameof(WebService));
+                    logger.LogWarning("Notifications that should NOT produce web notifications are being passed to {name}", nameof(WebService));
                 }
 
                 var tasks = new List<Task>();
@@ -42,12 +42,12 @@
                         CreatedAt = notification.CreatedAt,
                     };
 
-                    this.batcher.AddBatchedNotification(userId.ToString(), outNotification);
+                    batcher.AddBatchedNotification(userId.ToString(), outNotification);
                 }
 
-                if (this.batcher.ShouldProcessBatchedNotifications())
+                if (batcher.ShouldProcessBatchedNotifications())
                 {
-                    await this.batcher.ProcessBatchedNotifications();
+                    await batcher.ProcessBatchedNotifications();
                 }
 
                 return Result.Ok();
@@ -55,7 +55,7 @@
             catch (Exception ex)
             {
                 var message = string.Format("An error ocurred while sending the Web Notification. {error}", ex);
-                this.logger.LogError(message);
+                logger.LogError(message);
                 return Result.Fail(message);
             }
         }

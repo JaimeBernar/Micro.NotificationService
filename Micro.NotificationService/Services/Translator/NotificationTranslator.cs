@@ -1,4 +1,4 @@
-﻿namespace Micro.NotificationService.Services
+﻿namespace Micro.NotificationService.Services.Translator
 {
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Data;
@@ -16,7 +16,7 @@
 
         public async Task<IEnumerable<Notification>> ComputeNotifications(IEnumerable<NotificationMessage> notificationMessages)
         {
-            var (containValues, groupedByNotifications) = await this.GroupSubscriptionByNotification(notificationMessages);
+            var (containValues, groupedByNotifications) = await GroupSubscriptionByNotification(notificationMessages);
 
             if (!containValues)
             {
@@ -78,7 +78,7 @@
 
         private async Task<(bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values)> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
-            var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
+            var subscriptions = await context.Subscriptions.AsNoTracking().ToListAsync();
 
             if (!subscriptions.Any())
             {
