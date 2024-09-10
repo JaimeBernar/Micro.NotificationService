@@ -8,7 +8,6 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
     using System.Net;
-    using Micro.NotificationService.Models;
 
     public class NotificationsModule : ICarterModule
     {
@@ -30,6 +29,14 @@
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/batch/notifications", this.PostNewNotifications)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/batch/direct-notifications", this.PostNewDirectNotifications)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
@@ -75,7 +82,7 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessNotification(notification);
+                var result = await orchestrator.ProcessNotifications([notification]);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
@@ -97,7 +104,51 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessDirectNotification(notification);
+                var result = await orchestrator.ProcessDirectNotifications([notification]);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task PostNewNotifications(HttpContext context, [FromBody] IEnumerable<NotificationMessage> notifications, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var validationResult = context.Request.Validate(notifications);
+
+                if (!validationResult.IsValid)
+                {
+                    await context.Response.Negotiate(validationResult);
+                    return;
+                }
+
+                var result = await orchestrator.ProcessNotifications(notifications);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task PostNewDirectNotifications(HttpContext context, [FromBody] IEnumerable<DirectNotificationMessage> notifications, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var validationResult = context.Request.Validate(notifications);
+
+                if (!validationResult.IsValid)
+                {
+                    await context.Response.Negotiate(validationResult);
+                    return;
+                }
+
+                var result = await orchestrator.ProcessDirectNotifications(notifications);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)

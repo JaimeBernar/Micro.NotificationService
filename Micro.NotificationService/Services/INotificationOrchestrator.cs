@@ -9,9 +9,9 @@
     {
         Task<Result<IEnumerable<Notification>>> GetUserNotifications(Guid userId);
 
-        Task<Result> ProcessNotification(NotificationMessage notification);
+        Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages);
 
-        Task<Result> ProcessDirectNotification(DirectNotificationMessage notification);
+        Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notificationMessages);
 
         Task<Result> DeleteNotifications(IEnumerable<Guid> ids);
     }

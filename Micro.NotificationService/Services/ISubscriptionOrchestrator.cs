@@ -8,8 +8,8 @@
     {
         Task<Result<IEnumerable<Subscription>>> GetUserSubscriptions(Guid userId);
 
-        Task<Result<Subscription>> ProcessSubscription(SubscriptionMessage subscription);
+        Task<Result<IEnumerable<Subscription>>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions);
 
-        Task<Result> DeleteSubscription(Guid subscriptionId);
+        Task<Result> DeleteSubscriptions(IEnumerable<Guid> subscriptionIds);
     }
 }

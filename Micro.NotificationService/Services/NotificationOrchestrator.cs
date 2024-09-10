@@ -8,6 +8,8 @@
     using Micro.NotificationService.Data;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
+    using Micro.NotificationService.Extensions;
+    using System.Net;
 
     public class NotificationOrchestrator : INotificationOrchestrator
     {
@@ -47,16 +49,6 @@
                 this.logger.LogError(message);
                 return Result.Fail(message);
             }
-        }
-
-        public Task<Result> ProcessNotification(NotificationMessage notification)
-        {
-            return this.ProcessNotifications([notification]);
-        }
-
-        public Task<Result> ProcessDirectNotification(DirectNotificationMessage notification)
-        {
-            return this.ProcessDirectNotifications([notification]);
         }
 
         public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages)
@@ -113,9 +105,15 @@
             try
             {
                 var notifications = await this.context.Notifications.Where(x => ids.Contains(x.Id)).ToListAsync();
-                notifications.ForEach(x => x.IsReaded = true);
-                await this.context.SaveChangesAsync();
-                return Result.Ok();
+
+                if (notifications.Any())
+                {
+                    notifications.ForEach(x => x.IsReaded = true);
+                    await this.context.SaveChangesAsync();
+                    return Result.Ok();
+                }
+
+                return Result.Fail("No existing notifications for the specified ids").WithStatusCode(HttpStatusCode.NotFound);
             }
             catch (Exception ex)
             {

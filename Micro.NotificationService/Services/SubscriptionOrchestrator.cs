@@ -7,6 +7,7 @@
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
     using System.Net;
+    using System.Linq.Expressions;
 
     public class SubscriptionOrchestrator : ISubscriptionOrchestrator
     {
@@ -35,28 +36,35 @@
             }
         }
 
-        public async Task<Result<Subscription>> ProcessSubscription(SubscriptionMessage subscription)
+        public async Task<Result<IEnumerable<Subscription>>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions)
         {
             try
             {
-                // Check if the subscription already exist
-                var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
-                                                      p.UserId == subscription.UserId &&
-                                                      p.NotificationType == subscription.NotificationType &&
-                                                      p.Channel == subscription.Channel);
+                var result = new List<Subscription>();
 
-                if (existingSubscription != null)
+                foreach (var subscription in subscriptions)
                 {
-                    existingSubscription.IsSubscribed = subscription.IsSubscribed;
-                    await this.context.SaveChangesAsync();
-                    return Result.Ok(existingSubscription);
+                    // Check if the subscription already exist
+                    var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
+                                                          p.UserId == subscription.UserId &&
+                                                          p.NotificationType == subscription.NotificationType &&
+                                                          p.Channel == subscription.Channel);
+
+                    if (existingSubscription != null)
+                    {
+                        existingSubscription.IsSubscribed = subscription.IsSubscribed;
+                        result.Add(existingSubscription);
+                    }
+                    else
+                    {
+                        var model = subscription.ToModel();
+                        result.Add(model);
+                        this.context.Subscriptions.Add(model);
+                    }
                 }
 
-                var model = subscription.ToModel();
-                this.context.Subscriptions.Add(model);
                 await this.context.SaveChangesAsync();
-                return Result.Ok(model);
-
+                return Result.Ok(result.AsEnumerable());
             }
             catch (Exception ex)
             {
@@ -66,20 +74,20 @@
             }
         }
 
-        public async Task<Result> DeleteSubscription(Guid subscriptionId)
+        public async Task<Result> DeleteSubscriptions(IEnumerable<Guid> subscriptionIds)
         {
             try
             {                
-                var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p => p.Id == subscriptionId);
+                var subscriptions = await this.context.Subscriptions.Where(s => subscriptionIds.Contains(s.Id)).ToListAsync();
 
-                if (existingSubscription != null)
+                if (subscriptions.Any())
                 {
-                    existingSubscription.IsSubscribed = false;
+                    subscriptions.ForEach(s => s.IsSubscribed = false);
                     await this.context.SaveChangesAsync();
                     return Result.Ok();
                 }
 
-                return Result.Fail("No existing subscription with the specified id").WithStatusCode(HttpStatusCode.NotFound);
+                return Result.Fail("No existing subscriptions for the specified ids").WithStatusCode(HttpStatusCode.NotFound);
             }
             catch (Exception ex)
             {
