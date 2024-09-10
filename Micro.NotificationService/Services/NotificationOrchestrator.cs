@@ -38,7 +38,7 @@
         {
             try
             {
-                var result = await this.context.Notifications.Where(x => x.UserId == userId).ToArrayAsync();
+                var result = await this.context.Notifications.Where(x => x.UserId == userId && x.IsReaded == false).ToArrayAsync();
                 return Result.Ok<IEnumerable<Notification>>(result);
             }
             catch (Exception ex)
@@ -81,14 +81,6 @@
             var emailNotifications = notifications.Where(x => x.Channel == NotificationChannel.Email);
             var webNotifications = notifications.Where(x => x.Channel == NotificationChannel.Web);
 
-            this.context.Notifications.AddRange(notifications);
-            var savedNotifications = await this.context.SaveChangesAsync();
-
-            if(notifications.ToList().Count != savedNotifications)
-            {
-                return Result.Fail("the number of saved notifications is not equal to the number of notifications to process");
-            }
-
             if (this.settings.EmailNotificationsActive && emailNotifications.Any())
             {
                 var emailResult = await this.emailService.SendEmailNotification(emailNotifications);
@@ -101,6 +93,10 @@
 
             if (this.settings.WebNotificationsActive && webNotifications.Any())
             {
+                //Web notifications are saved as they need to be retrieved
+                this.context.Notifications.AddRange(webNotifications);
+                var savedNotifications = await this.context.SaveChangesAsync();
+
                 var webResult = await this.webService.SendWebNotifications(webNotifications);
 
                 if (webResult.IsFailed)
@@ -110,6 +106,21 @@
             }
 
             return Result.Ok();
+        }
+
+        public async Task<Result> DeleteNotifications(IEnumerable<Guid> ids)
+        {
+            try
+            {
+                var notifications = await this.context.Notifications.Where(x => ids.Contains(x.Id)).ToListAsync();
+                notifications.ForEach(x => x.IsReaded = true);
+                await this.context.SaveChangesAsync();
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail(ex.Message);
+            }
         }
     }
 }

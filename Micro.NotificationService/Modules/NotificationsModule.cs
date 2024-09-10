@@ -8,6 +8,7 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
     using System.Net;
+    using Micro.NotificationService.Models;
 
     public class NotificationsModule : ICarterModule
     {
@@ -29,6 +30,10 @@
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapDelete("api/v1/notifications", this.DeleteNotifications)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
         }
@@ -67,13 +72,6 @@
                 }
 
                 var result = await orchestrator.ProcessNotification(notification);
-
-                if (result.IsFailed)
-                {
-                    await context.Response.Negotiate(result);
-                    return;
-                }
-
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
@@ -96,13 +94,20 @@
                 }
 
                 var result = await orchestrator.ProcessDirectNotification(notification);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
 
-                if (result.IsFailed)
-                {
-                    await context.Response.Negotiate(result);
-                    return;
-                }
-
+        public async Task DeleteNotifications(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteNotifications(ids);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)

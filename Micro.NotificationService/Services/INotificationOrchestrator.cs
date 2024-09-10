@@ -12,5 +12,7 @@
         Task<Result> ProcessNotification(NotificationMessage notification);
 
         Task<Result> ProcessDirectNotification(DirectNotificationMessage notification);
+
+        Task<Result> DeleteNotifications(IEnumerable<Guid> ids);
     }
 }

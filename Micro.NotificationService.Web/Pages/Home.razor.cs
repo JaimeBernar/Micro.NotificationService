@@ -58,10 +58,24 @@ namespace Micro.NotificationService.Web.Pages
 
         private async Task DeleteAll()
         {
+            var json = JsonSerializer.Serialize(this.notifications.Select(x => x.Id));
+
+            var request = new HttpRequestMessage
+            {
+                RequestUri = new Uri("https://localhost:7070/api/v1/notifications"),
+                Method = HttpMethod.Delete,
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+            };
+
             //1.Send message to API to delete from database
-            //2.Remove it from list
-            this.notifications.Clear();
-            await this.InvokeAsync(this.StateHasChanged);
+            var response = await this.HttpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                //2.Remove it from list
+                this.notifications.Clear();
+                await this.InvokeAsync(this.StateHasChanged);
+            }          
         }
 
         private async Task OnConnectedClicked()
