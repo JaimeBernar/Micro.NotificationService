@@ -1,13 +1,13 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-const baseUrl = 'http://localhost:8085';
-//const baseUrl = 'http://localhost:5112'; //Debug
+//const baseUrl = 'http://localhost:8085';
+const baseUrl = 'http://localhost:5112'; //Debug
 
 export let options = {
     stages: [
-        { duration: '10s', target: 20 },  // Ramp-up to 20 users
-        { duration: '50s', target: 20 },  // Ramp-up to 20 users
+        { duration: '60s', target: 1 },  // Ramp-up to 20 users
+          // Ramp-up to 20 users
     ],
 };
 
@@ -15,7 +15,7 @@ export function setup() {
 
     const apiUrl = `${baseUrl}/api/v1/subscriptions`;
 
-    const request = {
+    const emailSubscription = {
         userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         subscriberName: "TestSubscriber",
         emailAddress: "test@email.com",
@@ -24,12 +24,29 @@ export function setup() {
         isSubscribed: true
     };
 
-    const response = http.post(apiUrl, JSON.stringify(request), {
+    const webSubscription = {
+        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        subscriberName: "TestSubscriber",
+        emailAddress: "test@email.com",
+        notificationType: "Type",
+        channel: 1,
+        isSubscribed: true
+    };
+
+    const emailResponse = http.post(apiUrl, JSON.stringify(emailSubscription), {
         headers: { 'Content-Type': 'application/json' }
     });
 
-    check(response, {
-        'POST request succeeded': (res) => res.status === 201 || res.status === 200,
+    const webResponse = http.post(apiUrl, JSON.stringify(webSubscription), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    check(emailResponse, {
+        'POST request for Email Subscription succeeded': (res) => res.status === 201 || res.status === 200,
+    });
+
+    check(webResponse, {
+        'POST request for Web Subscription succeeded': (res) => res.status === 201 || res.status === 200,
     });
 }
 
@@ -39,7 +56,6 @@ export default function () {
 
     const request = {
         notificationType: "Type",
-        channel: 0,
         header: "Header",
         body: "Body"
     };

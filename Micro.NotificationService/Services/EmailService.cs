@@ -23,20 +23,17 @@
             this.emailServerOptions = options.Value;
         }
 
-        public Task<Result> SendEmail(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
+        public async Task<Result> SendEmailNotification(IEnumerable<Notification> notifications)
         {
-            var messages = this.CreateMessages(groupedSubscriptions);
-            return this.SendEmails(messages);
-        }
+            var emailNotifications = notifications.Where(x => x.Channel == Common.Enums.NotificationChannel.Email);
 
-        public Task<Result> SendEmail(IEnumerable<DirectNotificationMessage> directNotifications)
-        {
-            var messages = this.CreateMessages(directNotifications);
-            return this.SendEmails(messages);
-        }
+            if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Email))
+            {
+                this.logger.LogWarning("Notifications that should NOT produce email notifications are being passed to {name}", nameof(EmailService));
+            }
 
-        private async Task<Result> SendEmails(IEnumerable<MimeMessage> messages)
-        {
+            var messages = this.CreateMessages(emailNotifications);
+
             try
             {
                 var messagesList = messages.ToList();
@@ -68,40 +65,11 @@
             }
         }
 
-        private IEnumerable<MimeMessage> CreateMessages(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions)
+        private IEnumerable<MimeMessage> CreateMessages(IEnumerable<Notification> notifications)
         {
             var messages = new List<MimeMessage>();
 
-            foreach(var group in groupedSubscriptions)
-            {
-                var notification = group.Key;
-                var subscriptions = group.Value;
-
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("NotificationService", "notification@service.com"));
-
-                foreach(var subscription in subscriptions)
-                {
-                    message.To.Add(new MailboxAddress("Receiver", subscription.EmailAddress));
-                }
-                                
-                message.Subject = notification.Header;
-                message.Body = new TextPart()
-                {
-                    Text = notification.Body
-                };
-
-                messages.Add(message);
-            }
-
-            return messages;
-        }
-
-        private IEnumerable<MimeMessage> CreateMessages(IEnumerable<DirectNotificationMessage> directNotifications)
-        {
-            var messages = new List<MimeMessage>();
-
-            foreach (var notification in directNotifications)
+            foreach (var notification in notifications)
             {
                 var message = new MimeMessage();
 
@@ -110,13 +78,17 @@
                     message.From.Add(new MailboxAddress(this.emailServerOptions.EmailSenderName, this.emailServerOptions.EmailSenderAddress));
                 }
 
-                message.To.Add(new MailboxAddress("Receiver", notification.EmailAddress));
+                var receiverName = notification.ReceiverName ?? "Receiver";
+
+                message.To.Add(new MailboxAddress(receiverName, notification.EmailAddress));
 
                 message.Subject = notification.Header;
                 message.Body = new TextPart()
                 {
                     Text = notification.Body
                 };
+
+                message.Date = notification.CreatedAt;
 
                 messages.Add(message);
             }

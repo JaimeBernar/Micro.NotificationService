@@ -7,6 +7,7 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
     using System.Net;
+    using Micro.NotificationService.Models;
 
     public class SubscriptionsModule : ICarterModule
     {
@@ -21,16 +22,29 @@
         {
             app.MapGet("api/v1/subscriptions/{userId:guid}", this.GetUserSubscriptions)
                .Produces((int)HttpStatusCode.OK)
-               .Produces((int)HttpStatusCode.InternalServerError);
+               .Produces((int)HttpStatusCode.InternalServerError)
+               .Produces<IEnumerable<Subscription>>();
 
             app.MapPost("api/v1/subscriptions", this.PostNewSubscription)
+               .Accepts<SubscriptionMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
-            app.MapDelete("api/v1/subscriptions/{subscriptionId:guid}", this.DeleteSubscription)
+            app.MapPost("api/v1/batch/subscriptions", this.PostNewSubscriptions)
+               .Accepts<IEnumerable<SubscriptionMessage>>("application/json")
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapDelete("api/v1/subscriptions/{id:guid}", this.DeleteSubscription)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.NotFound)
-               .Produces((int)HttpStatusCode.InternalServerError);                
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapDelete("api/v1/subscriptions", this.DeleteSubscriptions)
+               .Accepts<IEnumerable<Guid>>("application/json")
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.NotFound)
+               .Produces((int)HttpStatusCode.InternalServerError);
         }
 
         public async Task GetUserSubscriptions(HttpContext context, Guid userId, [FromServices] ISubscriptionOrchestrator orchestrator)
@@ -66,7 +80,7 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessSubscription(subscription);
+                var result = await orchestrator.ProcessSubscriptions([subscription]);
 
                 if (result.IsFailed)
                 {
@@ -83,11 +97,61 @@
             }
         }
 
-        public async Task DeleteSubscription(HttpContext context, Guid subscriptionId, [FromServices] ISubscriptionOrchestrator orchestrator)
+        public async Task PostNewSubscriptions(HttpContext context, [FromBody] IEnumerable<SubscriptionMessage> subscriptions, [FromServices] ISubscriptionOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.DeleteSubscription(subscriptionId);
+                var validationResult = context.Request.Validate(subscriptions);
+
+                if (!validationResult.IsValid)
+                {
+                    await context.Response.Negotiate(validationResult);
+                    return;
+                }
+
+                var result = await orchestrator.ProcessSubscriptions(subscriptions);
+
+                if (result.IsFailed)
+                {
+                    await context.Response.Negotiate(result);
+                    return;
+                }
+
+                await context.Response.Negotiate(result.Value);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while getting user notifications. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task DeleteSubscription(HttpContext context, Guid id, [FromServices] ISubscriptionOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteSubscriptions([id]);
+
+                if (result.IsFailed)
+                {
+                    await context.Response.Negotiate(result);
+                    return;
+                }
+
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while getting user notifications. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task DeleteSubscriptions(HttpContext context,[FromBody] IEnumerable<Guid> ids, [FromServices] ISubscriptionOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteSubscriptions(ids);
 
                 if (result.IsFailed)
                 {

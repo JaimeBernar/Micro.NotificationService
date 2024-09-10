@@ -3,6 +3,7 @@
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Diagnostics.CodeAnalysis;
     using Micro.NotificationService.Common.Enums;
 
     [Table(nameof(Subscription))]
@@ -12,9 +13,11 @@
         public Guid UserId { get; set; }
 
         [Required]
+        [NotNull]
         public string NotificationType { get; set; }
 
         [Required]
+        [NotNull]
         public string EmailAddress { get; set; }
 
         public string SubscriberName { get; set; }

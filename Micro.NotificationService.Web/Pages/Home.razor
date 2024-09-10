@@ -1,0 +1,64 @@
+﻿@page "/"
+@using Micro.NotificationService.Common.DTOs
+@rendermode InteractiveWebAssembly
+<PageTitle>Micro.Notifications</PageTitle>
+
+<RadzenLayout>
+    <RadzenHeader></RadzenHeader>
+    <RadzenSidebar Expanded="true">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Refresh"
+                                 Icon="refresh"
+                                 Click="@(async () => await this.Refresh())"/>
+        </RadzenPanelMenu>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Connected" 
+                                 Icon="power_settings_circle" 
+                                 IconColor="@this.GetIconColor()"
+                                 Click="@(async () => await this.OnConnectedClicked())"/>
+        </RadzenPanelMenu>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Delete all notifications"
+                                 Icon="delete"
+                                 IconColor="@Colors.Danger" 
+                                 Click="@(async () => await this.DeleteAll())"/>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        <RadzenDataList AllowVirtualization="false"
+                        AllowPaging="true"
+                        PageSize="8"
+                        Data="@this.notifications" 
+                        TItem="OutNotification"
+                        PagerHorizontalAlign="HorizontalAlign.Left" 
+                        ShowPagingSummary="true">
+
+        <Template Context="notification">
+                <RadzenRow Gap="0">
+                    <RadzenColumn>
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Header</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">@(notification.Header)</RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Body</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">@(notification.Body)</RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Created At</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">@(notification.CreatedAt.ToLocalTime())</RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenStack Orientation="Orientation.Horizontal"
+                                     AlignItems="AlignItems.Center"
+                                     JustifyContent="JustifyContent.Center">
+                            <RadzenButton Icon="delete"
+                                          ButtonStyle="ButtonStyle.Danger" 
+                                          Click="@(async () => await this.DeleteNotification(notification))"/>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+        </Template>
+    </RadzenDataList>
+
+    </RadzenBody>
+</RadzenLayout>

@@ -7,5 +7,9 @@
         public bool EmailNotificationsActive { get; set; }
 
         public bool WebNotificationsActive { get; set; }
+
+        public int BatchSize { get; set; }
+
+        public int BatchTime { get; set; }
     }
 }

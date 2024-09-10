@@ -8,6 +8,7 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
     using System.Net;
+    using Micro.NotificationService.Models;
 
     public class NotificationsModule : ICarterModule
     {
@@ -22,14 +23,38 @@
         {
             app.MapGet("api/v1/notifications/{userId:guid}", this.GetUserNotifications)
                .Produces((int)HttpStatusCode.OK)
-               .Produces((int)HttpStatusCode.InternalServerError);
+               .Produces((int)HttpStatusCode.InternalServerError)
+               .Produces<IEnumerable<Notification>>();
 
             app.MapPost("api/v1/notifications", this.PostNewNotification)
+               .Accepts<NotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
+               .Accepts<DirectNotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/batch/notifications", this.PostNewNotifications)
+               .Accepts<IEnumerable<NotificationMessage>>("application/json")
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapPost("api/v1/batch/direct-notifications", this.PostNewDirectNotifications)
+               .Accepts<IEnumerable<DirectNotificationMessage>>("application/json")
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapDelete("api/v1/notifications/{id:guid}", this.DeleteNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.NotFound)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
+            app.MapDelete("api/v1/notifications", this.DeleteNotifications)
+               .Accepts<IEnumerable<Guid>>("application/json")
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
         }
 
@@ -66,14 +91,7 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessNotification(notification);
-
-                if (result.IsFailed)
-                {
-                    await context.Response.Negotiate(result);
-                    return;
-                }
-
+                var result = await orchestrator.ProcessNotifications([notification]);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
@@ -95,19 +113,84 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessDirectNotification(notification);
-
-                if (result.IsFailed)
-                {
-                    await context.Response.Negotiate(result);
-                    return;
-                }
-
+                var result = await orchestrator.ProcessDirectNotifications([notification]);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
             {
                 this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task PostNewNotifications(HttpContext context, [FromBody] IEnumerable<NotificationMessage> notifications, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var validationResult = context.Request.Validate(notifications);
+
+                if (!validationResult.IsValid)
+                {
+                    await context.Response.Negotiate(validationResult);
+                    return;
+                }
+
+                var result = await orchestrator.ProcessNotifications(notifications);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task PostNewDirectNotifications(HttpContext context, [FromBody] IEnumerable<DirectNotificationMessage> notifications, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var validationResult = context.Request.Validate(notifications);
+
+                if (!validationResult.IsValid)
+                {
+                    await context.Response.Negotiate(validationResult);
+                    return;
+                }
+
+                var result = await orchestrator.ProcessDirectNotifications(notifications);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task DeleteNotification(HttpContext context, Guid id, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteNotifications([id]);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while deleting the notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
+        public async Task DeleteNotifications(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteNotifications(ids);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while deleting the notifications. {error}", ex);
                 await context.Response.Negotiate(ex);
             }
         }
