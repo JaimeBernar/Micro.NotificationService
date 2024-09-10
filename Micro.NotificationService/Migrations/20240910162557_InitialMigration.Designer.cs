@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Micro.NotificationService.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240908171306_InitialMigration")]
+    [Migration("20240910162557_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -20,13 +20,14 @@ namespace Micro.NotificationService.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("Micro.NotificationService.Models.DirectNotification", b =>
+            modelBuilder.Entity("Micro.NotificationService.Models.Notification", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Body")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Channel")
@@ -38,33 +39,16 @@ namespace Micro.NotificationService.Migrations
                     b.Property<string>("Header")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ReceiverName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DirectNotification");
-                });
-
-            modelBuilder.Entity("Micro.NotificationService.Models.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Body")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Channel")
+                    b.Property<bool>("IsDirect")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Header")
-                        .HasColumnType("TEXT");
+                    b.Property<bool>("IsReaded")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("NotificationType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReceiverName")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserId")
@@ -96,6 +80,7 @@ namespace Micro.NotificationService.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SubscriberName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserId")

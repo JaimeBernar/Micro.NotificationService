@@ -9,11 +9,11 @@
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
 
-    using Notification = Micro.NotificationService.Models.Notification;
-
     public class NotificationOrchestrator : INotificationOrchestrator
     {
         private readonly Context context;
+
+        private readonly INotificationTranslator translator;
 
         private readonly IEmailService emailService;
 
@@ -23,10 +23,11 @@
 
         private readonly ILogger<NotificationOrchestrator> logger;
 
-        public NotificationOrchestrator(Context context, IEmailService emailService, IWebService webService,
-            IOptions<SettingsOptions> options, ILogger<NotificationOrchestrator> logger)
+        public NotificationOrchestrator(Context context, INotificationTranslator notificationTranslator, IEmailService emailService, 
+            IWebService webService, IOptions<SettingsOptions> options, ILogger<NotificationOrchestrator> logger)
         {
             this.context = context;
+            this.translator = notificationTranslator;
             this.emailService = emailService;
             this.webService = webService;
             this.settings = options.Value;
@@ -58,24 +59,34 @@
             return this.ProcessDirectNotifications([notification]);
         }
 
-        public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notifications)
+        public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages)
         {
-            // Check if a subscription for that notification type exist
-            var (containValues, groupedSubscriptions) = await this.GroupSubscriptionByNotification(notifications);
+            var notifications = await this.translator.ComputeNotifications(notificationMessages);
+            return await this.ProcessAndSaveNotifications(notifications);
+        }
 
-            if (!containValues)
+        public Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notificationMessages)
+        {
+            var notifications = this.translator.ComputeNotifications(notificationMessages);
+            return this.ProcessAndSaveNotifications(notifications);
+        }
+
+        private async Task<Result> ProcessAndSaveNotifications(IEnumerable<Notification> notifications)
+        {
+            var emailNotifications = notifications.Where(x => x.Channel == NotificationChannel.Email);
+            var webNotifications = notifications.Where(x => x.Channel == NotificationChannel.Web);
+
+            this.context.Notifications.AddRange(emailNotifications);
+            var savedNotifications = await this.context.SaveChangesAsync();
+
+            if(notifications.ToList().Count != savedNotifications)
             {
-                //No subscriptions found, so call the logger and return a ok result as it can NOT be considered a failure
-                this.logger.LogWarning("No subscriptions found for the specified NotificationType in the Notifications");
-                return Result.Ok();
+                return Result.Fail("the number of saved notifications is not equal to the number of notifications to process");
             }
 
-            var emailSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
-            var webSubscriptions = groupedSubscriptions.Where(x => x.Key.Channel == NotificationChannel.Email).ToDictionary();
-
-            if (this.settings.EmailNotificationsActive)
+            if (this.settings.EmailNotificationsActive && emailNotifications.Any())
             {
-                var emailResult = await this.emailService.SendEmail(emailSubscriptions);
+                var emailResult = await this.emailService.SendEmailNotification(emailNotifications);
 
                 if (emailResult.IsFailed)
                 {
@@ -83,9 +94,9 @@
                 }
             }
 
-            if (this.settings.WebNotificationsActive)
+            if (this.settings.WebNotificationsActive && webNotifications.Any())
             {
-                var webResult = await this.webService.SendWebNotification(webSubscriptions);
+                var webResult = await this.webService.SendWebNotifications(webNotifications);
 
                 if (webResult.IsFailed)
                 {
@@ -94,58 +105,6 @@
             }
 
             return Result.Ok();
-        }
-
-        public async Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notifications)
-        {
-            var emailSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
-            var webSubscriptions = notifications.Where(x => x.Channel == NotificationChannel.Email);
-
-            if (this.settings.EmailNotificationsActive)
-            {
-                var emailResult = await this.emailService.SendEmail(emailSubscriptions);
-
-                if (emailResult.IsFailed)
-                {
-                    return emailResult;
-                }
-            }
-
-            if (this.settings.WebNotificationsActive)
-            {
-                var webResult = await this.webService.SendWebNotification(webSubscriptions);
-
-                if (webResult.IsFailed)
-                {
-                    return webResult;
-                }
-            }
-
-            return Result.Ok();
-        }
-
-        private async Task<(bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values)> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
-        {
-            var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
-
-            if (!subscriptions.Any())
-            {
-                return (false, []);
-            }
-
-            // Group subscriptions by notification
-            var groupedSubscriptions = notifications
-                .GroupBy(n => n, n => subscriptions.Where(s => s.NotificationType == n.NotificationType && s.Channel == n.Channel))
-                .ToDictionary(g => g.Key, g => g.First());
-
-            if (!groupedSubscriptions.Any())
-            {
-                return (false, []);
-            }
-
-            var containValues = groupedSubscriptions.All(kvp => kvp.Value.Any());
-
-            return (containValues, groupedSubscriptions);
         }
     }
 }

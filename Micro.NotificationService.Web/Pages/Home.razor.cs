@@ -3,17 +3,21 @@ using Micro.NotificationService.Common.SignalR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Radzen;
+using System.Text.Json;
 
 namespace Micro.NotificationService.Web.Pages
 {
     public partial class Home
     {
         [Inject]
+        public HttpClient HttpClient { get; set; }
+
+        [Inject]
         public NavigationManager NavigationManager { get; set; }
 
         private HubConnection HubConnection { get; set; }
 
-        private List<Notification> notifications = [];
+        private List<OutNotification> notifications = [];
 
         protected override async Task OnInitializedAsync()
         {
@@ -24,13 +28,40 @@ namespace Micro.NotificationService.Web.Pages
                 .WithAutomaticReconnect()
                 .Build();
 
-            this.HubConnection.On<IEnumerable<Notification>>(NotificationMethodNames.Receive, async (notifications) =>
+            this.HubConnection.On<IEnumerable<OutNotification>>(NotificationMethodNames.Receive, async (notifications) =>
             {
                 this.notifications.AddRange(notifications);
                 await this.InvokeAsync(this.StateHasChanged);
             });
 
             await this.HubConnection.StartAsync();
+            await this.Refresh();
+        }
+
+        private async Task Refresh()
+        {
+            var response = await this.HttpClient.GetAsync("https://localhost:7070/api/v1/notifications/3fa85f64-5717-4562-b3fc-2c963f66afa6");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var notifications = JsonSerializer.Deserialize<IEnumerable<OutNotification>>(content);
+
+                if (notifications.Any())
+                {
+                    this.notifications.Clear();
+                    this.notifications.AddRange(notifications);
+                    await this.InvokeAsync(this.StateHasChanged);
+                }
+            }
+        }
+
+        private async Task DeleteAll()
+        {
+            //1.Send message to API to delete from database
+            //2.Remove it from list
+            this.notifications.Clear();
+            await this.InvokeAsync(this.StateHasChanged);
         }
 
         private async Task OnConnectedClicked()

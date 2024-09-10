@@ -5,8 +5,6 @@
 
     public class Context : DbContext
     {
-        public DbSet<DirectNotification> DirectNotifications { get; set; }
-
         public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<Subscription> Subscriptions { get; set; }

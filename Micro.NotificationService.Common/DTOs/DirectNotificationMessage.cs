@@ -15,6 +15,8 @@
 
         public string Body { get; set; }
 
+        public string NotificationType { get; set; }
+
         public NotificationChannel Channel { get; set; }
     }
 }

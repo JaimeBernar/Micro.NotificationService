@@ -8,7 +8,8 @@
     <RadzenSidebar Expanded="true">
         <RadzenPanelMenu>
             <RadzenPanelMenuItem Text="Refresh"
-                                 Icon="refresh"/>
+                                 Icon="refresh"
+                                 Click="@(async () => await this.Refresh())"/>
         </RadzenPanelMenu>
         <RadzenPanelMenu>
             <RadzenPanelMenuItem Text="Connected" 
@@ -27,7 +28,7 @@
                         AllowPaging="true"
                         PageSize="8"
                         Data="@this.notifications" 
-                        TItem="Notification" 
+                        TItem="OutNotification"
                         PagerHorizontalAlign="HorizontalAlign.Left" 
                         ShowPagingSummary="true">
 

@@ -6,8 +6,6 @@
 
     public interface IEmailService 
     {
-        Task<Result> SendEmail(Dictionary<NotificationMessage, IEnumerable<Subscription>> groupedSubscriptions);
-
-        Task<Result> SendEmail(IEnumerable<DirectNotificationMessage> directNotifications);
+        Task<Result> SendEmailNotification(IEnumerable<Notification> notifications);
     }
 }

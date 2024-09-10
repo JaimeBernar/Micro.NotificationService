@@ -70,12 +70,6 @@
                 case IEnumerable<Notification> notifications:
                     return (HttpStatusCode.OK, notifications);
 
-                case DirectNotification directNotification:
-                    return (HttpStatusCode.OK, directNotification);
-
-                case IEnumerable<DirectNotification> directNotifications:
-                    return (HttpStatusCode.OK, directNotifications);
-
                 case Exception ex:
                     return (HttpStatusCode.InternalServerError, ex);
 

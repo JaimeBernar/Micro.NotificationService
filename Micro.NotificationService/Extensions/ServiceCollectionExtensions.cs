@@ -26,6 +26,7 @@
 
             serviceCollection.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();
             serviceCollection.AddScoped<ISubscriptionOrchestrator, SubscriptionOrchestrator>();
+            serviceCollection.AddScoped<INotificationTranslator, NotificationTranslator>();
             serviceCollection.AddScoped<IEmailService, EmailService>();
             serviceCollection.AddScoped<IWebService, WebService>();
             serviceCollection.AddSingleton<WebNotificationBatcher>();
