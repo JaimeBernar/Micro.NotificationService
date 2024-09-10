@@ -56,6 +56,19 @@ namespace Micro.NotificationService.Web.Pages
             }
         }
 
+        private async Task DeleteNotification(OutNotification notification)
+        {
+            //1.Send message to API to delete from database
+            var response = await this.HttpClient.DeleteAsync($"https://localhost:7070/api/v1/notifications/{notification.Id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                //2.Remove it from list
+                this.notifications.Remove(notification);
+                await this.InvokeAsync(this.StateHasChanged);
+            }
+        }
+
         private async Task DeleteAll()
         {
             var json = JsonSerializer.Serialize(this.notifications.Select(x => x.Id));

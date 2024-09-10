@@ -52,7 +52,8 @@
                                      AlignItems="AlignItems.Center"
                                      JustifyContent="JustifyContent.Center">
                             <RadzenButton Icon="delete"
-                                          ButtonStyle="ButtonStyle.Danger" />
+                                          ButtonStyle="ButtonStyle.Danger" 
+                                          Click="@(async () => await this.DeleteNotification(notification))"/>
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>

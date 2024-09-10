@@ -33,6 +33,10 @@
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
+            app.MapDelete("api/v1/notifications/{id:guid}", this.DeleteNotification)
+               .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.InternalServerError);
+
             app.MapDelete("api/v1/notifications", this.DeleteNotifications)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
@@ -103,6 +107,20 @@
             }
         }
 
+        public async Task DeleteNotification(HttpContext context, Guid id, [FromServices] INotificationOrchestrator orchestrator)
+        {
+            try
+            {
+                var result = await orchestrator.DeleteNotifications([id]);
+                await context.Response.Negotiate(result);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError("An error ocurred while deleting the notification. {error}", ex);
+                await context.Response.Negotiate(ex);
+            }
+        }
+
         public async Task DeleteNotifications(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] INotificationOrchestrator orchestrator)
         {
             try
@@ -112,7 +130,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.LogError("An error ocurred while posting a new notification. {error}", ex);
+                this.logger.LogError("An error ocurred while deleting the notifications. {error}", ex);
                 await context.Response.Negotiate(ex);
             }
         }
