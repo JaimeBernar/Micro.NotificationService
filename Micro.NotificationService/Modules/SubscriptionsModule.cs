@@ -22,15 +22,16 @@
         {
             app.MapGet("api/v1/subscriptions/{userId:guid}", this.GetUserSubscriptions)
                .Produces((int)HttpStatusCode.OK)
-               .Produces((int)HttpStatusCode.InternalServerError);
+               .Produces((int)HttpStatusCode.InternalServerError)
+               .Produces<IEnumerable<Subscription>>();
 
             app.MapPost("api/v1/subscriptions", this.PostNewSubscription)
-               .Accepts<IEnumerable<Subscription>>("application/json")
+               .Accepts<SubscriptionMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/batch/subscriptions", this.PostNewSubscriptions)
-               .Accepts<IEnumerable<Subscription>>("application/json")
+               .Accepts<IEnumerable<SubscriptionMessage>>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 

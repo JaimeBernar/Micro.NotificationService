@@ -8,6 +8,7 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Services;
     using System.Net;
+    using Micro.NotificationService.Models;
 
     public class NotificationsModule : ICarterModule
     {
@@ -22,30 +23,38 @@
         {
             app.MapGet("api/v1/notifications/{userId:guid}", this.GetUserNotifications)
                .Produces((int)HttpStatusCode.OK)
-               .Produces((int)HttpStatusCode.InternalServerError);
+               .Produces((int)HttpStatusCode.InternalServerError)
+               .Produces<IEnumerable<Notification>>();
 
             app.MapPost("api/v1/notifications", this.PostNewNotification)
+               .Accepts<NotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
+               .Accepts<DirectNotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/batch/notifications", this.PostNewNotifications)
+               .Accepts<IEnumerable<NotificationMessage>>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/batch/direct-notifications", this.PostNewDirectNotifications)
+               .Accepts<IEnumerable<DirectNotificationMessage>>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapDelete("api/v1/notifications/{id:guid}", this.DeleteNotification)
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapDelete("api/v1/notifications", this.DeleteNotifications)
+               .Accepts<IEnumerable<Guid>>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
         }
 
