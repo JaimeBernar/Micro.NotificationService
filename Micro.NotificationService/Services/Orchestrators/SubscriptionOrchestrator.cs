@@ -7,7 +7,6 @@
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
     using System.Net;
-    using System.Linq.Expressions;
 
     public class SubscriptionOrchestrator : ISubscriptionOrchestrator
     {
@@ -41,7 +40,7 @@
             try
             {
                 var result = new List<Subscription>();
-
+                               
                 foreach (var subscription in subscriptions)
                 {
                     // Check if the subscription already exist

@@ -10,13 +10,19 @@
     using Micro.NotificationService.Services.Web;
     using Micro.NotificationService.Validators;
     using Microsoft.AspNetCore.ResponseCompression;
+    using Microsoft.EntityFrameworkCore;
     using System.Text;
 
     public static class ServiceCollectionExtensions
     {
         public static void AddServices(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddDbContext<Context>();
+            serviceCollection.AddDbContext<Context>(options =>
+            {
+                var path = Path.Combine("Data", "database.db");
+                options.UseSqlite($"Data Source={path}");
+            });
+
             serviceCollection.AddLogging();
             serviceCollection.AddCarter(configurator: c =>
             {
