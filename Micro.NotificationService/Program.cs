@@ -9,11 +9,8 @@ namespace Micro.NotificationService
     using Micro.NotificationService.Options;
     using Serilog;
     using Micro.NotificationService.Services;
-    using Micro.NotificationService.Common.SignalR;
-    using Microsoft.AspNetCore.Hosting.Server.Features;
-    using Microsoft.AspNetCore.Hosting.Server;
 
-    public class Program
+    public partial class Program
     {
         public static void Main(string[] args)
         {

@@ -17,9 +17,9 @@
 
         public EmailService(ILogger<EmailService> logger, IOptions<EmailServerOptions> options)
         {
-            smtpClient = new SmtpClient();
+            this.smtpClient = new SmtpClient();
             this.logger = logger;
-            emailServerOptions = options.Value;
+            this.emailServerOptions = options.Value;
         }
 
         public async Task<Result> SendEmailNotification(IEnumerable<Notification> notifications)
@@ -28,7 +28,7 @@
 
             if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Email))
             {
-                logger.LogWarning("Notifications that should NOT produce email notifications are being passed to {name}", nameof(EmailService));
+                this.logger.LogWarning("Notifications that should NOT produce email notifications are being passed to {name}", nameof(EmailService));
             }
 
             var messages = CreateMessages(emailNotifications);
@@ -43,11 +43,11 @@
                     return Result.Ok();
                 }
 
-                logger.LogInformation("Sending {count} messages", messagesList.Count);
+                this.logger.LogInformation("Sending {count} messages", messagesList.Count);
 
-                await smtpClient.ConnectAsync(emailServerOptions.Host, emailServerOptions.Port);
+                await this.smtpClient.ConnectAsync(this.emailServerOptions.Host, this.emailServerOptions.Port);
 
-                var tasks = messagesList.Select(m => smtpClient.SendAsync(m));
+                var tasks = messagesList.Select(m => this.smtpClient.SendAsync(m));
 
                 await Task.WhenAll(tasks);
                 return Result.Ok();
@@ -55,12 +55,12 @@
             catch (Exception ex)
             {
                 var message = string.Format("An error ocurred while sending the Email. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
             finally
             {
-                await smtpClient.DisconnectAsync(true);
+                await this.smtpClient.DisconnectAsync(true);
             }
         }
 
@@ -72,9 +72,9 @@
             {
                 var message = new MimeMessage();
 
-                if (emailServerOptions.UseSenderInfo)
+                if (this.emailServerOptions.UseSenderInfo)
                 {
-                    message.From.Add(new MailboxAddress(emailServerOptions.EmailSenderName, emailServerOptions.EmailSenderAddress));
+                    message.From.Add(new MailboxAddress(this.emailServerOptions.EmailSenderName, this.emailServerOptions.EmailSenderAddress));
                 }
 
                 var receiverName = notification.ReceiverName ?? "Receiver";
@@ -97,7 +97,7 @@
 
         public void Dispose()
         {
-            smtpClient.Dispose();
+            this.smtpClient.Dispose();
         }
     }
 }

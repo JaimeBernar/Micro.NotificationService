@@ -25,7 +25,7 @@
 
                 if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Web))
                 {
-                    logger.LogWarning("Notifications that should NOT produce web notifications are being passed to {name}", nameof(WebService));
+                    this.logger.LogWarning("Notifications that should NOT produce web notifications are being passed to {name}", nameof(WebService));
                 }
 
                 var tasks = new List<Task>();
@@ -42,12 +42,12 @@
                         CreatedAt = notification.CreatedAt,
                     };
 
-                    batcher.AddBatchedNotification(userId.ToString(), outNotification);
+                    this.batcher.AddBatchedNotification(userId.ToString(), outNotification);
                 }
 
-                if (batcher.ShouldProcessBatchedNotifications())
+                if (this.batcher.ShouldProcessBatchedNotifications())
                 {
-                    await batcher.ProcessBatchedNotifications();
+                    await this.batcher.ProcessBatchedNotifications();
                 }
 
                 return Result.Ok();
@@ -55,7 +55,7 @@
             catch (Exception ex)
             {
                 var message = string.Format("An error ocurred while sending the Web Notification. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }

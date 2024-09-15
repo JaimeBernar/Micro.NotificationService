@@ -24,13 +24,13 @@
         {
             try
             {
-                var result = await context.Subscriptions.Where(x => x.UserId == userId).ToArrayAsync();
+                var result = await this.context.Subscriptions.Where(x => x.UserId == userId).ToArrayAsync();
                 return Result.Ok<IEnumerable<Subscription>>(result);
             }
             catch (Exception ex)
             {
                 var message = string.Format("An Error ocurred while getting user subscriptions. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }
@@ -44,7 +44,7 @@
                 foreach (var subscription in subscriptions)
                 {
                     // Check if the subscription already exist
-                    var existingSubscription = await context.Subscriptions.FirstOrDefaultAsync(p =>
+                    var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
                                                           p.UserId == subscription.UserId &&
                                                           p.NotificationType == subscription.NotificationType &&
                                                           p.Channel == subscription.Channel);
@@ -58,17 +58,17 @@
                     {
                         var model = subscription.ToModel();
                         result.Add(model);
-                        context.Subscriptions.Add(model);
+                        this.context.Subscriptions.Add(model);
                     }
                 }
 
-                await context.SaveChangesAsync();
+                await this.context.SaveChangesAsync();
                 return Result.Ok(result.AsEnumerable());
             }
             catch (Exception ex)
             {
                 var message = string.Format("An Error ocurred while processing the subscription. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }
@@ -77,7 +77,7 @@
         {
             try
             {
-                var subscriptions = await context.Subscriptions.Where(s => subscriptionIds.Contains(s.Id)).ToListAsync();
+                var subscriptions = await this.context.Subscriptions.Where(s => subscriptionIds.Contains(s.Id)).ToListAsync();
 
                 if (subscriptions.Any())
                 {
@@ -91,7 +91,7 @@
             catch (Exception ex)
             {
                 var message = string.Format("An Error ocurred while deleting the subscription. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }

@@ -78,7 +78,7 @@
 
         private async Task<(bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values)> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
-            var subscriptions = await context.Subscriptions.AsNoTracking().ToListAsync();
+            var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
 
             if (!subscriptions.Any())
             {

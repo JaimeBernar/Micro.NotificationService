@@ -7,9 +7,8 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
     using Moq;
-    using NUnit.Framework;
+    using Xunit;
 
-    [TestFixture]
     public class SubscriptionOrchestratorTestFixture
     {
         private Context context;
@@ -18,8 +17,7 @@
         private Subscription subscription;
         private Guid userId;
 
-        [SetUp]
-        public void SetUp()
+        public SubscriptionOrchestratorTestFixture()
         {
             var options = new DbContextOptionsBuilder<Context>()
                 .UseSqlite("DataSource=:memory:")
@@ -36,21 +34,21 @@
             this.orchestrator = new SubscriptionOrchestrator(this.context, this.logger.Object);
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyGetUserSubscriptions()
         {
             await this.VerifyProcessSubscriptions();
 
             var result = await this.orchestrator.GetUserSubscriptions(this.userId);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             var values = result.Value;
 
-            Assert.That(values.Count(), Is.EqualTo(2));
+            Assert.Equal(2, values.Count());
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyProcessSubscriptions()
         {
             var message = new SubscriptionMessage()
@@ -66,8 +64,8 @@
 
             Assert.Multiple(() =>
             {
-                Assert.That(result.IsSuccess, Is.True);
-                Assert.That(this.context.Subscriptions.Count(), Is.EqualTo(1));
+                Assert.True(result.IsSuccess);
+                Assert.Equal(1, this.context.Subscriptions.Count());
             });
 
             this.subscription = result.Value.First();
@@ -78,12 +76,12 @@
 
             Assert.Multiple(() =>
             {
-                Assert.That(result.IsSuccess, Is.True);
-                Assert.That(this.context.Subscriptions.Count(), Is.EqualTo(2));
+                Assert.True(result.IsSuccess);
+                Assert.Equal(2, this.context.Subscriptions.Count());
             });
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyDeleteSubscriptions()
         {
             await this.VerifyGetUserSubscriptions();
@@ -92,11 +90,11 @@
 
             var result = await this.orchestrator.GetUserSubscriptions(this.userId);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             var values = result.Value;
 
-            Assert.That(values.Count(), Is.EqualTo(2));
+            Assert.Equal(2, values.Count());
         }
     }
 }

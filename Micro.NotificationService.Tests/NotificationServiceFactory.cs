@@ -1,6 +1,8 @@
 ﻿namespace Micro.NotificationService.Tests
 {
-    public class NotificationServiceFactory : WebApplicationFactory<Pro>
+    using Microsoft.AspNetCore.Mvc.Testing;
+
+    public class NotificationServiceFactory : WebApplicationFactory<Program>
     {
     }
 }

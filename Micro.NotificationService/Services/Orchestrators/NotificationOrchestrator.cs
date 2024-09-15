@@ -32,10 +32,10 @@
             IWebService webService, IOptions<SettingsOptions> options, ILogger<NotificationOrchestrator> logger)
         {
             this.context = context;
-            translator = notificationTranslator;
+            this.translator = notificationTranslator;
             this.emailService = emailService;
             this.webService = webService;
-            settings = options.Value;
+            this.settings = options.Value;
             this.logger = logger;
         }
 
@@ -43,26 +43,26 @@
         {
             try
             {
-                var result = await context.Notifications.Where(x => x.UserId == userId && x.IsReaded == false).ToArrayAsync();
+                var result = await this.context.Notifications.Where(x => x.UserId == userId && x.IsReaded == false).ToArrayAsync();
                 return Result.Ok<IEnumerable<Notification>>(result);
             }
             catch (Exception ex)
             {
                 var message = string.Format("An Error ocurred while getting user notifications. {error}", ex);
-                logger.LogError(message);
+                this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }
 
         public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages)
         {
-            var notifications = await translator.ComputeNotifications(notificationMessages);
+            var notifications = await this.translator.ComputeNotifications(notificationMessages);
             return await ProcessAndSaveNotifications(notifications);
         }
 
         public Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notificationMessages)
         {
-            var notifications = translator.ComputeNotifications(notificationMessages);
+            var notifications = this.translator.ComputeNotifications(notificationMessages);
             return ProcessAndSaveNotifications(notifications);
         }
 
@@ -76,9 +76,9 @@
             var emailNotifications = notifications.Where(x => x.Channel == NotificationChannel.Email);
             var webNotifications = notifications.Where(x => x.Channel == NotificationChannel.Web);
 
-            if (settings.EmailNotificationsActive && emailNotifications.Any())
+            if (this.settings.EmailNotificationsActive && emailNotifications.Any())
             {
-                var emailResult = await emailService.SendEmailNotification(emailNotifications);
+                var emailResult = await this.emailService.SendEmailNotification(emailNotifications);
 
                 if (emailResult.IsFailed)
                 {
@@ -89,10 +89,10 @@
             if (settings.WebNotificationsActive && webNotifications.Any())
             {
                 //Web notifications are saved as they need to be retrieved
-                context.Notifications.AddRange(webNotifications);
-                var savedNotifications = await context.SaveChangesAsync();
+                this.context.Notifications.AddRange(webNotifications);
+                var savedNotifications = await this.context.SaveChangesAsync();
 
-                var webResult = await webService.SendWebNotifications(webNotifications);
+                var webResult = await this.webService.SendWebNotifications(webNotifications);
 
                 if (webResult.IsFailed)
                 {
@@ -107,12 +107,12 @@
         {
             try
             {
-                var notifications = await context.Notifications.Where(x => ids.Contains(x.Id)).ToListAsync();
+                var notifications = await this.context.Notifications.Where(x => ids.Contains(x.Id)).ToListAsync();
 
                 if (notifications.Any())
                 {
                     notifications.ForEach(x => x.IsReaded = true);
-                    await context.SaveChangesAsync();
+                    await this.context.SaveChangesAsync();
                     return Result.Ok();
                 }
 

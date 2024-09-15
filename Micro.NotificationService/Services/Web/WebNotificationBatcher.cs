@@ -20,26 +20,26 @@
         public WebNotificationBatcher(IHubContext<NotificationsHub> hub, IOptions<SettingsOptions> settings)
         {
             var settingsValue = settings.Value;
-            bactchMaxSize = settingsValue.BatchSize;
+            this.bactchMaxSize = settingsValue.BatchSize;
             this.hub = hub;
-            timer = new Timer(async _ => await ProcessBatchedNotifications(true), null, TimeSpan.Zero, TimeSpan.FromSeconds(settingsValue.BatchTime));
+            this.timer = new Timer(async _ => await ProcessBatchedNotifications(true), null, TimeSpan.Zero, TimeSpan.FromSeconds(settingsValue.BatchTime));
         }
 
         public void AddBatchedNotification(string userId, OutNotification notification)
         {
-            if (batchedNotifications.TryGetValue(userId, out var notifications))
+            if (this.batchedNotifications.TryGetValue(userId, out var notifications))
             {
                 notifications.Add(notification);
             }
             else
             {
-                batchedNotifications.TryAdd(userId, [notification]);
+                this.batchedNotifications.TryAdd(userId, [notification]);
             }
         }
 
         public bool ShouldProcessBatchedNotifications()
         {
-            return batchedNotifications.Values.SelectMany(x => x).ToList().Count > bactchMaxSize;
+            return this.batchedNotifications.Values.SelectMany(x => x).ToList().Count > this.bactchMaxSize;
         }
 
         public async Task ProcessBatchedNotifications(bool calledByTimer = false)
@@ -61,7 +61,7 @@
 
             await Task.WhenAll(tasks);
 
-            batchedNotifications.Clear();
+            this.batchedNotifications.Clear();
         }
     }
 }

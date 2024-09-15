@@ -13,9 +13,8 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Moq;
-    using NUnit.Framework;
+    using Xunit;
 
-    [TestFixture]
     public class NotificationOrchestratorTestFixture
     {
         private Context context;
@@ -27,9 +26,8 @@
         private Mock<ILogger<NotificationOrchestrator>> logger;
         private Notification notification;
         private Guid userId;
-
-        [SetUp]
-        public void SetUp()
+                
+        public NotificationOrchestratorTestFixture()
         {
             var options = new DbContextOptionsBuilder<Context>()
                 .UseSqlite("DataSource=:memory:")
@@ -64,25 +62,25 @@
                                                              this.logger.Object);
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyGetUserNotifications()
         {
             await this.VerifyProcessNotifications();
 
             var result = await this.orchestrator.GetUserNotifications(this.userId);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             var values = result.Value;
 
             Assert.Multiple(() =>
             {
-                Assert.That(values.Count(), Is.EqualTo(1));
-                Assert.That(values.First(), Is.EqualTo(this.notification));
+                Assert.Single(values);
+                Assert.Equal(this.notification, values.First());
             });
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyProcessNotifications()
         {
             this.notification = new Notification()
@@ -101,7 +99,7 @@
 
             var result = await this.orchestrator.ProcessNotifications([new NotificationMessage()]);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             this.emailService.Verify(x => x.SendEmailNotification(It.IsAny<IEnumerable<Notification>>()), Times.Once());
 
@@ -109,13 +107,13 @@
 
             result = await this.orchestrator.ProcessNotifications([new NotificationMessage()]);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             this.webService.Verify(x => x.SendWebNotifications(It.IsAny<IEnumerable<Notification>>()), Times.Once());
             this.context.Notifications.Contains(this.notification);
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyProcessDirectNotifications()
         {
             this.notification = new Notification()
@@ -135,7 +133,7 @@
 
             var result = await this.orchestrator.ProcessDirectNotifications([new DirectNotificationMessage()]);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             this.emailService.Verify(x => x.SendEmailNotification(It.IsAny<IEnumerable<Notification>>()), Times.Once());
 
@@ -143,13 +141,13 @@
 
             result = await this.orchestrator.ProcessDirectNotifications([new DirectNotificationMessage()]);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             this.webService.Verify(x => x.SendWebNotifications(It.IsAny<IEnumerable<Notification>>()), Times.Once());
             this.context.Notifications.Contains(notification);
         }
 
-        [Test]
+        [Fact]
         public async Task VerifyDeleteNotifications()
         {
             await this.VerifyGetUserNotifications();
@@ -158,11 +156,11 @@
 
             var result = await this.orchestrator.GetUserNotifications(this.userId);
 
-            Assert.That(result.IsSuccess, Is.True);
+            Assert.True(result.IsSuccess);
 
             var values = result.Value;
 
-            Assert.That(values.Count(), Is.EqualTo(0));
+            Assert.Empty(values);
         }
     }
 }
