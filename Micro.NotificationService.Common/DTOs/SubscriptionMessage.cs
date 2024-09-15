@@ -1,7 +1,7 @@
 ﻿namespace Micro.NotificationService.Common.DTOs
 {
-    using System;
     using Micro.NotificationService.Common.Enums;
+    using System;
 
     public class SubscriptionMessage
     {
@@ -24,9 +24,9 @@
                 return false;
             }
 
-            return string.Equals(this.NotificationType, other.NotificationType) && 
+            return string.Equals(this.NotificationType, other.NotificationType) &&
                    this.Channel == other.Channel &&
-                   this.UserId == other.UserId && 
+                   this.UserId == other.UserId &&
                    string.Equals(this.EmailAddress, other.EmailAddress);
         }
 

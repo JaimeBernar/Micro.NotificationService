@@ -3,6 +3,9 @@
     using Carter;
     using Carter.ModelBinding;
     using Carter.Response;
+    using Micro.NotificationService.Common.DTOs;
+    using Micro.NotificationService.Models;
+    using Micro.NotificationService.Services;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Routing;
     using Micro.NotificationService.Common.DTOs;
@@ -83,7 +86,7 @@
             }
         }
 
-        public async Task PostNewNotification(HttpContext context, [FromBody] NotificationMessage notification, [FromServices] INotificationOrchestrator orchestrator) 
+        public async Task PostNewNotification(HttpContext context, [FromBody] NotificationMessage notification, [FromServices] INotificationOrchestrator orchestrator)
         {
             try
             {

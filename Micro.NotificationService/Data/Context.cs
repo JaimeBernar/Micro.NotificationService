@@ -1,7 +1,7 @@
 ﻿namespace Micro.NotificationService.Data
 {
-    using Microsoft.EntityFrameworkCore;
     using Micro.NotificationService.Models;
+    using Microsoft.EntityFrameworkCore;
 
     public class Context(DbContextOptions<Context> options) : DbContext(options)
     {

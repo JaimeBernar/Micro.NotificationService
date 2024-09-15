@@ -1,12 +1,14 @@
 namespace Micro.NotificationService
 {
     using Carter;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Hosting;
+    using Micro.NotificationService.Common.SignalR;
     using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
-    using Microsoft.Extensions.Options;
     using Micro.NotificationService.Options;
+    using Micro.NotificationService.Services;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Options;
     using Serilog;
     using Micro.NotificationService.Services;
     using Microsoft.Extensions.Configuration;
@@ -53,7 +55,7 @@ namespace Micro.NotificationService
                 logger = app.Services.GetRequiredService<ILogger<Program>>();
                 var settings = app.Services.GetRequiredService<IOptions<SettingsOptions>>().Value;
                 var serverOptions = app.Services.GetRequiredService<IOptions<EmailServerOptions>>().Value;
-                                
+
                 logger.LogInformation("Logging Configuration");
                 logger.LogInformation("Settings:");
                 logger.LogInformation($"{nameof(SettingsOptions.EmailNotificationsActive)}={settings.EmailNotificationsActive}");

@@ -1,7 +1,7 @@
 ﻿namespace Micro.NotificationService.Common.DTOs
 {
-    using System;
     using Micro.NotificationService.Common.Enums;
+    using System;
 
     public class DirectNotificationMessage
     {

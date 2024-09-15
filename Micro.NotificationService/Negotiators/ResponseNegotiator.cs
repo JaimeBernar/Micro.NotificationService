@@ -3,9 +3,9 @@
     using Carter;
     using FluentResults;
     using FluentValidation.Results;
-    using Microsoft.Net.Http.Headers;
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
+    using Microsoft.Net.Http.Headers;
     using System.Net;
     using System.Text.Json;
 

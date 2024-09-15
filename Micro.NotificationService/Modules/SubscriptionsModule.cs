@@ -3,8 +3,8 @@
     using Carter;
     using Carter.ModelBinding;
     using Carter.Response;
-    using Microsoft.AspNetCore.Mvc;
     using Micro.NotificationService.Common.DTOs;
+    using Microsoft.AspNetCore.Mvc;
     using System.Net;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Services.Orchestrators;
@@ -147,7 +147,7 @@
             }
         }
 
-        public async Task DeleteSubscriptions(HttpContext context,[FromBody] IEnumerable<Guid> ids, [FromServices] ISubscriptionOrchestrator orchestrator)
+        public async Task DeleteSubscriptions(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] ISubscriptionOrchestrator orchestrator)
         {
             try
             {

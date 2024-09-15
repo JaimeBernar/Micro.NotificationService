@@ -1,14 +1,14 @@
 ﻿namespace Micro.NotificationService.Services.Orchestrators
 {
     using FluentResults;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Options;
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Common.Enums;
     using Micro.NotificationService.Data;
+    using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
-    using Micro.NotificationService.Extensions;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
     using System.Net;
     using Micro.NotificationService.Services.Email;
     using Micro.NotificationService.Services.Web;
