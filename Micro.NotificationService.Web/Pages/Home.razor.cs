@@ -15,16 +15,24 @@ namespace Micro.NotificationService.Web.Pages
         [Inject]
         public NavigationManager NavigationManager { get; set; }
 
+        [Inject]
+        public IConfiguration Configuration { get; set; }
+
         private HubConnection HubConnection { get; set; }
 
         private List<OutNotification> notifications = [];
+
+        private string apiBaseUrl;
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
 
+            this.apiBaseUrl = this.Configuration["NotificationServiceSettings:ApiBaseUrl"];
+            var hubUrl = this.Configuration["NotificationServiceSettings:NotificationsHubPath"];
+
             this.HubConnection = new HubConnectionBuilder()
-                .WithUrl($"https://localhost:7070{NotificationMethodNames.HubUrl}")
+                .WithUrl($"{this.apiBaseUrl}{hubUrl}")
                 .WithAutomaticReconnect()
                 .Build();
 
@@ -40,7 +48,7 @@ namespace Micro.NotificationService.Web.Pages
 
         private async Task Refresh()
         {
-            var response = await this.HttpClient.GetAsync("https://localhost:7070/api/v1/notifications/3fa85f64-5717-4562-b3fc-2c963f66afa6");
+            var response = await this.HttpClient.GetAsync($"{this.apiBaseUrl}/api/v1/notifications/3fa85f64-5717-4562-b3fc-2c963f66afa6");
 
             if (response.IsSuccessStatusCode)
             {
@@ -59,7 +67,7 @@ namespace Micro.NotificationService.Web.Pages
         private async Task DeleteNotification(OutNotification notification)
         {
             //1.Send message to API to delete from database
-            var response = await this.HttpClient.DeleteAsync($"https://localhost:7070/api/v1/notifications/{notification.Id}");
+            var response = await this.HttpClient.DeleteAsync($"{this.apiBaseUrl}/api/v1/notifications/{notification.Id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -75,7 +83,7 @@ namespace Micro.NotificationService.Web.Pages
 
             var request = new HttpRequestMessage
             {
-                RequestUri = new Uri("https://localhost:7070/api/v1/notifications"),
+                RequestUri = new Uri($"{this.apiBaseUrl}/api/v1/notifications"),
                 Method = HttpMethod.Delete,
                 Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
             };

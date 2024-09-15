@@ -5,9 +5,9 @@
     using Carter.Response;
     using Microsoft.AspNetCore.Mvc;
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Services;
     using System.Net;
     using Micro.NotificationService.Models;
+    using Micro.NotificationService.Services.Orchestrators;
 
     public class SubscriptionsModule : ICarterModule
     {

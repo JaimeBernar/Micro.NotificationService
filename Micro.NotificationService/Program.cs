@@ -9,18 +9,28 @@ namespace Micro.NotificationService
     using Micro.NotificationService.Options;
     using Serilog;
     using Micro.NotificationService.Services;
-    using Micro.NotificationService.Common.SignalR;
-    using Microsoft.AspNetCore.Hosting.Server.Features;
-    using Microsoft.AspNetCore.Hosting.Server;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Data.Sqlite;
 
-    public class Program
+    public partial class Program
     {
+        private static SqliteConnection? connection;
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+    
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            connection = new SqliteConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
+            connection.Open();
+
+            builder.Services.AddDbContext<Context>(options =>
+            {
+                options.UseSqlite(connection);
+            });
 
             builder.Services.AddOptions(builder.Configuration);
             builder.Services.AddServices();
@@ -29,7 +39,7 @@ namespace Micro.NotificationService
                 configuration.ReadFrom.Configuration(builder.Configuration);
             });
 
-            ILogger<Program> logger = null;
+            ILogger<Program> logger = null!;
 
             try
             {
@@ -57,7 +67,7 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
                 EnsureCreatedAndApplyMigrations(app);
-                //app.UseRouting();
+  
                 app.UseCors("Cors");
                 app.MapCarter();
 
@@ -70,12 +80,17 @@ namespace Micro.NotificationService
 
                 app.UseHttpsRedirection();
 
-                app.MapHub<NotificationsHub>(NotificationMethodNames.HubUrl);
+                app.MapHub<NotificationsHub>(settings.NotificationsHubPath);
                 app.Run();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error ocurred while executing the app");
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
             }
         }
 
@@ -83,9 +98,12 @@ namespace Micro.NotificationService
         {
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-                //dbContext.Database.EnsureCreated();  
-                dbContext.Database.Migrate();        
+                var dbContext = scope.ServiceProvider.GetRequiredService<Context>(); 
+
+                if (dbContext.Database.GetPendingMigrations().Any())
+                {
+                    dbContext.Database.Migrate();
+                }     
             }
         }
     }

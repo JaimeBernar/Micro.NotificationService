@@ -9,7 +9,14 @@
         {
             this.RuleFor(x => x.NotificationType).NotEmpty().WithMessage("The NotificationType can NOT be empty");
             this.RuleFor(x => x.Body).NotEmpty().WithMessage("The Body can NOT be empty");
-        }        
-    
+        }
+    }
+
+    public class NotificationMessagesValidator : AbstractValidator<IEnumerable<NotificationMessage>>
+    {
+        public NotificationMessagesValidator(NotificationMessageValidator validator)
+        {
+            this.RuleForEach(x => x).SetValidator(validator);
+        }
     }
 }
