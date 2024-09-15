@@ -24,8 +24,4 @@
     <ProjectReference Include="..\Micro.NotificationService\Micro.NotificationService.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="IntegrationTests\" />
-  </ItemGroup>
-
 </Project>

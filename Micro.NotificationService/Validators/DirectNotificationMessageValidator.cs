@@ -8,8 +8,20 @@
         public DirectNotificationMessageValidator()
         {
             this.RuleFor(x => x.Body).NotEmpty().WithMessage("The Body can NOT be empty");
-            this.RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("The Email can NOT be empty");
-            this.RuleFor(x => x.UserId).NotEmpty().WithMessage("The UserId can NOT be empty");
+            this.RuleFor(x => x).Must(VerifyEmailOrUserId).WithMessage("Email and UserId can NOT be empty. One of them must be filled.");
+        }
+
+        private static bool VerifyEmailOrUserId(DirectNotificationMessage directNotification)
+        {
+            return !string.IsNullOrEmpty(directNotification.EmailAddress) || directNotification.UserId != default;
+        }
+    }
+
+    public class DirectNotificationMessagesValidator : AbstractValidator<IEnumerable<DirectNotificationMessage>>
+    {
+        public DirectNotificationMessagesValidator(DirectNotificationMessageValidator validator)
+        {
+            this.RuleForEach(x => x).SetValidator(validator);
         }
     }
 }

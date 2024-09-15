@@ -11,18 +11,13 @@
     using Micro.NotificationService.Validators;
     using Microsoft.AspNetCore.ResponseCompression;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
     using System.Text;
 
     public static class ServiceCollectionExtensions
     {
         public static void AddServices(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddDbContext<Context>(options =>
-            {
-                var path = Path.Combine("Data", "database.db");
-                options.UseSqlite($"Data Source={path}");
-            });
-
             serviceCollection.AddLogging();
             serviceCollection.AddCarter(configurator: c =>
             {
@@ -31,6 +26,9 @@
                 c.WithValidator<SubscriptionMessageValidator>();
                 c.WithValidator<NotificationMessageValidator>();
                 c.WithValidator<DirectNotificationMessageValidator>();
+                c.WithValidator<SubscriptionMessagesValidator>();
+                c.WithValidator<NotificationMessagesValidator>();
+                c.WithValidator<DirectNotificationMessagesValidator>();
             });
 
             serviceCollection.AddScoped<INotificationOrchestrator, NotificationOrchestrator>();

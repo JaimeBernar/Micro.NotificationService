@@ -9,15 +9,28 @@ namespace Micro.NotificationService
     using Micro.NotificationService.Options;
     using Serilog;
     using Micro.NotificationService.Services;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Data.Sqlite;
 
     public partial class Program
     {
+        private static SqliteConnection? connection;
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+    
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            connection = new SqliteConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
+            connection.Open();
+
+            builder.Services.AddDbContext<Context>(options =>
+            {
+                options.UseSqlite(connection);
+            });
 
             builder.Services.AddOptions(builder.Configuration);
             builder.Services.AddServices();
@@ -54,7 +67,7 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
                 EnsureCreatedAndApplyMigrations(app);
-                //app.UseRouting();
+  
                 app.UseCors("Cors");
                 app.MapCarter();
 
@@ -74,15 +87,23 @@ namespace Micro.NotificationService
             {
                 logger.LogError(ex, "An error ocurred while executing the app");
             }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
         }
 
         private static void EnsureCreatedAndApplyMigrations(WebApplication app)
         {
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-                //dbContext.Database.EnsureCreated();  
-                dbContext.Database.Migrate();        
+                var dbContext = scope.ServiceProvider.GetRequiredService<Context>(); 
+
+                if (dbContext.Database.GetPendingMigrations().Any())
+                {
+                    dbContext.Database.Migrate();
+                }     
             }
         }
     }

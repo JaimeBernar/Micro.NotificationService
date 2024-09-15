@@ -29,21 +29,25 @@
             app.MapPost("api/v1/notifications", this.PostNewNotification)
                .Accepts<NotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.UnprocessableEntity)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/direct-notifications", this.PostNewDirectNotification)
                .Accepts<DirectNotificationMessage>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.UnprocessableEntity)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/batch/notifications", this.PostNewNotifications)
                .Accepts<IEnumerable<NotificationMessage>>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.UnprocessableEntity)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("api/v1/batch/direct-notifications", this.PostNewDirectNotifications)
                .Accepts<IEnumerable<DirectNotificationMessage>>("application/json")
                .Produces((int)HttpStatusCode.OK)
+               .Produces((int)HttpStatusCode.UnprocessableEntity)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapDelete("api/v1/notifications/{id:guid}", this.DeleteNotification)

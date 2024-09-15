@@ -11,4 +11,12 @@
             this.RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("EmailAddress can NOT be empty");
         }
     }
+
+    public class SubscriptionMessagesValidator : AbstractValidator<IEnumerable<SubscriptionMessage>>
+    {
+        public SubscriptionMessagesValidator(SubscriptionMessageValidator validator)
+        {
+            this.RuleForEach(x => x).SetValidator(validator);
+        }
+    }
 }

@@ -34,7 +34,7 @@
                 .Options;
 
             this.context = new Context(options);
-            this.context.Database.OpenConnection(); // Open connection to the SQLite in-memory DB
+            this.context.Database.OpenConnection();
             this.context.Database.EnsureCreated();
 
             this.userId = Guid.NewGuid();
