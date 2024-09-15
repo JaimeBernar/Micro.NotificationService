@@ -24,7 +24,10 @@
         {
             try
             {
-                var result = await this.context.Subscriptions.Where(x => x.UserId == userId).ToArrayAsync();
+                var result = await this.context.Subscriptions.AsNoTracking()
+                                               .Where(x => x.UserId == userId)
+                                               .ToArrayAsync();
+
                 return Result.Ok<IEnumerable<Subscription>>(result);
             }
             catch (Exception ex)
@@ -40,27 +43,73 @@
             try
             {
                 var result = new List<Subscription>();
-                               
-                foreach (var subscription in subscriptions)
-                {
-                    // Check if the subscription already exist
-                    var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
-                                                          p.UserId == subscription.UserId &&
-                                                          p.NotificationType == subscription.NotificationType &&
-                                                          p.Channel == subscription.Channel);
 
-                    if (existingSubscription != null)
+                //var existingSubscriptions = await this.context.Subscriptions.Where(s => 
+                //                            subscriptions.Any(sm => sm.UserId == s.UserId && 
+                //                                              sm.NotificationType == s.NotificationType &&
+                //                                              sm.Channel == s.Channel)).ToArrayAsync();
+
+                //foreach(var existingSubscription in existingSubscriptions)
+                //{
+                //    existingSubscription.IsSubscribed = true;
+                //    result.Add(existingSubscription);
+                //}
+
+                // Create a list of anonymous objects that combine the three fields for comparison
+                var subscriptionKeys = subscriptions
+                    .Select(s => new { s.UserId, s.NotificationType, s.Channel })
+                    .ToList();
+
+                var whereClause = string.Join(" OR ", subscriptions.Select(s => $"(UserId={s.UserId} AND NotificationType='{s.NotificationType}' AND Channel='{s.Channel}')"));
+
+                // Fetch all existing subscriptions where the combination of UserId, NotificationType, and Channel match
+                var existingSubscriptions = await this.context.Subscriptions.FromSqlRaw("SELECT * FROM Subscriptions WHERE " + whereClause).ToListAsync();
+
+                // Update existing subscriptions
+                foreach (var existingSubscription in existingSubscriptions)
+                {
+                    var subscription = subscriptions.FirstOrDefault(sm => sm.UserId == existingSubscription.UserId &&
+                                                                          sm.NotificationType == existingSubscription.NotificationType &&
+                                                                          sm.Channel == existingSubscription.Channel);
+
+                    if (subscription != null)
                     {
                         existingSubscription.IsSubscribed = subscription.IsSubscribed;
                         result.Add(existingSubscription);
                     }
-                    else
-                    {
-                        var model = subscription.ToModel();
-                        result.Add(model);
-                        this.context.Subscriptions.Add(model);
-                    }
                 }
+
+                // Handle new subscriptions that do not exist in the database
+                var newSubscriptions = subscriptions.Where(sm => !existingSubscriptions.Any(es =>
+                    es.UserId == sm.UserId && es.NotificationType == sm.NotificationType && es.Channel == sm.Channel)).ToList();
+
+                foreach (var newSubscription in newSubscriptions)
+                {
+                    var model = newSubscription.ToModel();
+                    result.Add(model);
+                    this.context.Subscriptions.Add(model);
+                }
+
+                //foreach (var subscription in subscriptions)
+                //{
+                //    // Check if the subscription already exist
+                //    var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
+                //                                          p.UserId == subscription.UserId &&
+                //                                          p.NotificationType == subscription.NotificationType &&
+                //                                          p.Channel == subscription.Channel);
+
+                //    if (existingSubscription != null)
+                //    {
+                //        existingSubscription.IsSubscribed = subscription.IsSubscribed;
+                //        result.Add(existingSubscription);
+                //    }
+                //    else
+                //    {
+                //        var model = subscription.ToModel();
+                //        result.Add(model);
+                //        this.context.Subscriptions.Add(model);
+                //    }
+                //}
 
                 await this.context.SaveChangesAsync();
                 return Result.Ok(result.AsEnumerable());

@@ -4,10 +4,10 @@
     using Carter.ModelBinding;
     using Carter.Response;
     using Micro.NotificationService.Common.DTOs;
-    using Microsoft.AspNetCore.Mvc;
-    using System.Net;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Services.Orchestrators;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Net;
 
     public class SubscriptionsModule : ICarterModule
     {

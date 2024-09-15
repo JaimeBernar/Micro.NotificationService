@@ -6,8 +6,6 @@
     using Micro.NotificationService.Options;
     using Microsoft.Extensions.Options;
     using MimeKit;
-    using Micro.NotificationService.Models;
-    using Micro.NotificationService.Options;
 
     public class EmailService : IEmailService, IDisposable
     {

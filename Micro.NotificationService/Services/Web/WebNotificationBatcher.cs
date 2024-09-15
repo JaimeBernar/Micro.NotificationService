@@ -3,6 +3,7 @@
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Common.SignalR;
     using Micro.NotificationService.Options;
+    using Micro.NotificationService.Services.Hub;
     using Microsoft.AspNetCore.SignalR;
     using Microsoft.Extensions.Options;
     using System.Collections.Concurrent;
@@ -49,12 +50,13 @@
             {
                 return;
             }
-
+                      
             var tasks = new List<Task>();
 
             foreach (var (userId, notifications) in batchedNotifications)
             {
-                //TODO: Use group key to send only the interested user
+                //Use group key to send only the notification with the user with the specified id
+                //Check: https://learn.microsoft.com/en-us/aspnet/core/signalr/groups?view=aspnetcore-8.0
                 //tasks.Add(this.hub.Clients?.User(group.Key).SendAsync(NotificationMethodNames.Receive, group.Value));
                 tasks.Add(hub.Clients.All.SendAsync(NotificationMethodNames.Receive, notifications));
             }

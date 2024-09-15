@@ -1,19 +1,17 @@
 namespace Micro.NotificationService
 {
     using Carter;
-    using Micro.NotificationService.Common.SignalR;
     using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Options;
-    using Micro.NotificationService.Services;
+    using Micro.NotificationService.Services.Hub;
+    using Microsoft.Data.Sqlite;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Serilog;
-    using Micro.NotificationService.Services;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Data.Sqlite;
 
     public partial class Program
     {
@@ -22,7 +20,7 @@ namespace Micro.NotificationService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-    
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -69,7 +67,7 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
                 EnsureCreatedAndApplyMigrations(app);
-  
+
                 app.UseCors("Cors");
                 app.MapCarter();
 
@@ -100,12 +98,12 @@ namespace Micro.NotificationService
         {
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<Context>(); 
+                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
 
                 if (dbContext.Database.GetPendingMigrations().Any())
                 {
                     dbContext.Database.Migrate();
-                }     
+                }
             }
         }
     }

@@ -26,7 +26,7 @@
         private Mock<ILogger<NotificationOrchestrator>> logger;
         private Notification notification;
         private Guid userId;
-                
+
         public NotificationOrchestratorTestFixture()
         {
             var options = new DbContextOptionsBuilder<Context>()
