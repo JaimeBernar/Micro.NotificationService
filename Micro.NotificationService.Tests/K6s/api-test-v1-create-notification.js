@@ -1,13 +1,13 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-//const baseUrl = 'http://localhost:8085';
-const baseUrl = 'http://localhost:5112'; //Debug
+const baseUrl = 'http://localhost:8085';
+//const baseUrl = 'http://localhost:5112'; //Debug
 
 export let options = {
     stages: [
-        { duration: '60s', target: 1 },  // Ramp-up to 20 users
-          // Ramp-up to 20 users
+        { duration: '10s', target: 20 },  
+        { duration: '50s', target: 20 }, 
     ],
 };
 
