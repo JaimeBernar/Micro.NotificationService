@@ -1,22 +1,21 @@
 ﻿namespace Micro.NotificationService.Services.Translator
 {
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Models;
-    using Microsoft.EntityFrameworkCore;
+    using Micro.NotificationService.Services.Data;
 
     public class NotificationTranslator : INotificationTranslator
     {
-        private readonly Context context;
+        private readonly IDataService dataService;
 
-        public NotificationTranslator(Context context)
+        public NotificationTranslator(IDataService dataService)
         {
-            this.context = context;
+            this.dataService = dataService;
         }
 
-        public async Task<IEnumerable<Notification>> ComputeNotifications(IEnumerable<NotificationMessage> notificationMessages)
+        public IEnumerable<Notification> ComputeNotifications(IEnumerable<NotificationMessage> notificationMessages)
         {
-            var (containValues, groupedByNotifications) = await GroupSubscriptionByNotification(notificationMessages);
+            var (containValues, groupedByNotifications) = this.GroupSubscriptionByNotification(notificationMessages);
 
             if (!containValues)
             {
@@ -76,9 +75,14 @@
             return result;
         }
 
-        private async Task<(bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values)> GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
+        private (bool containValues, Dictionary<NotificationMessage, IEnumerable<Subscription>> values) GroupSubscriptionByNotification(IEnumerable<NotificationMessage> notifications)
         {
-            var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
+            var notificationTypes = notifications.Select(n => n.NotificationType);
+
+            //var subscriptions = await this.context.Subscriptions.AsNoTracking().ToListAsync();
+            var subscriptions = this.dataService.Subscriptions.Query()
+                                    .Where(s => notificationTypes.Contains(s.NotificationType))
+                                    .ToList();
 
             if (!subscriptions.Any())
             {

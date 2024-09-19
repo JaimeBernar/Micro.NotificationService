@@ -1,13 +1,9 @@
 namespace Micro.NotificationService
 {
     using Carter;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Options;
     using Micro.NotificationService.Services.Hub;
-    using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
@@ -15,22 +11,12 @@ namespace Micro.NotificationService
 
     public partial class Program
     {
-        private static SqliteConnection? connection;
-
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
-            connection = new SqliteConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
-            connection.Open();
-
-            builder.Services.AddDbContext<Context>(options =>
-            {
-                options.UseSqlite(connection);
-            });
 
             builder.Services.AddOptions(builder.Configuration);
             builder.Services.AddServices();
@@ -66,8 +52,6 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderName)}={serverOptions.EmailSenderName}");
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
-                EnsureCreatedAndApplyMigrations(app);
-
                 app.UseCors("Cors");
                 app.MapCarter();
 
@@ -86,24 +70,6 @@ namespace Micro.NotificationService
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error ocurred while executing the app");
-            }
-            finally
-            {
-                connection.Close();
-                connection.Dispose();
-            }
-        }
-
-        private static void EnsureCreatedAndApplyMigrations(WebApplication app)
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-
-                if (dbContext.Database.GetPendingMigrations().Any())
-                {
-                    dbContext.Database.Migrate();
-                }
             }
         }
     }

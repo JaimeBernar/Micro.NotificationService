@@ -3,6 +3,7 @@
     using Carter;
     using Micro.NotificationService.Modules;
     using Micro.NotificationService.Options;
+    using Micro.NotificationService.Services.Data;
     using Micro.NotificationService.Services.Email;
     using Micro.NotificationService.Services.Orchestrators;
     using Micro.NotificationService.Services.Translator;
@@ -16,6 +17,7 @@
     {
         public static void AddServices(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton<IDataService, DataService>();
             serviceCollection.AddLogging();
             serviceCollection.AddCarter(configurator: c =>
             {

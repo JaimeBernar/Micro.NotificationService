@@ -5,7 +5,7 @@
 
     public interface INotificationTranslator
     {
-        Task<IEnumerable<Notification>> ComputeNotifications(IEnumerable<NotificationMessage> notificationMessages);
+        IEnumerable<Notification> ComputeNotifications(IEnumerable<NotificationMessage> notificationMessages);
 
         IEnumerable<Notification> ComputeNotifications(IEnumerable<DirectNotificationMessage> direcNotificationMessages);
     }

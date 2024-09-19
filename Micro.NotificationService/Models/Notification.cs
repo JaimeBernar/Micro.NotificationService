@@ -1,15 +1,12 @@
 ﻿namespace Micro.NotificationService.Models
 {
     using Micro.NotificationService.Common.Enums;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Diagnostics.CodeAnalysis;
 
-    [Table(nameof(Notification))]
-    public class Notification : Entity
+    public class Notification 
     {
-        [Required]
-        public Guid UserId { get; set; }
+        public int Id { get; set; }
+
+        public string UserId { get; set; }
 
         public string? ReceiverName { get; set; }
 
@@ -21,7 +18,6 @@
 
         public string? Header { get; set; }
 
-        [NotNull]
         public string Body { get; set; } = null!;
 
         public DateTime CreatedAt { get; } = DateTime.UtcNow;

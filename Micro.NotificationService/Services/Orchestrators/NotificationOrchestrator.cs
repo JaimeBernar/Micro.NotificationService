@@ -3,20 +3,19 @@
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Common.Enums;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
+    using Micro.NotificationService.Services.Data;
     using Micro.NotificationService.Services.Email;
     using Micro.NotificationService.Services.Translator;
     using Micro.NotificationService.Services.Web;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Options;
     using System.Net;
 
     public class NotificationOrchestrator : INotificationOrchestrator
     {
-        private readonly Context context;
+        private readonly IDataService dataService;
 
         private readonly INotificationTranslator translator;
 
@@ -28,10 +27,10 @@
 
         private readonly ILogger<NotificationOrchestrator> logger;
 
-        public NotificationOrchestrator(Context context, INotificationTranslator notificationTranslator, IEmailService emailService,
+        public NotificationOrchestrator(IDataService dataService, INotificationTranslator notificationTranslator, IEmailService emailService,
             IWebService webService, IOptions<SettingsOptions> options, ILogger<NotificationOrchestrator> logger)
         {
-            this.context = context;
+            this.dataService = dataService;
             this.translator = notificationTranslator;
             this.emailService = emailService;
             this.webService = webService;
@@ -39,15 +38,15 @@
             this.logger = logger;
         }
 
-        public async Task<Result<IEnumerable<Notification>>> GetUserNotifications(Guid userId)
+        public Result<IEnumerable<Notification>> GetUserNotifications(string userId)
         {
             try
             {
-                var result = await this.context.Notifications.AsNoTracking()
-                                               .Where(x => x.UserId == userId && x.IsReaded == false)
-                                               .ToArrayAsync();
+                var result = this.dataService.Notifications.Query()
+                                             .Where(x => x.UserId == userId && x.IsReaded == false)
+                                             .ToEnumerable();
 
-                return Result.Ok<IEnumerable<Notification>>(result);
+                return Result.Ok(result);
             }
             catch (Exception ex)
             {
@@ -57,10 +56,10 @@
             }
         }
 
-        public async Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages)
+        public Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages)
         {
-            var notifications = await this.translator.ComputeNotifications(notificationMessages);
-            return await ProcessAndSaveNotifications(notifications);
+            var notifications = this.translator.ComputeNotifications(notificationMessages);
+            return ProcessAndSaveNotifications(notifications);
         }
 
         public Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notificationMessages)
@@ -89,11 +88,10 @@
                 }
             }
 
-            if (settings.WebNotificationsActive && webNotifications.Any())
+            if (this.settings.WebNotificationsActive && webNotifications.Any())
             {
                 //Web notifications are saved as they need to be retrieved
-                this.context.Notifications.AddRange(webNotifications);
-                var savedNotifications = await this.context.SaveChangesAsync();
+                this.dataService.Notifications.InsertBulk(webNotifications);
 
                 var webResult = await this.webService.SendWebNotifications(webNotifications);
 
@@ -106,16 +104,17 @@
             return Result.Ok();
         }
 
-        public async Task<Result> DeleteNotifications(IEnumerable<Guid> ids)
+        public Result DeleteNotifications(IEnumerable<int> ids)
         {
             try
             {
-                var notifications = await this.context.Notifications.Where(x => ids.Contains(x.Id)).ToListAsync();
+                var notifications = this.dataService.Notifications.Query()
+                                        .Where(x => ids.Contains(x.Id)).
+                                        ToList();
 
                 if (notifications.Any())
                 {
                     notifications.ForEach(x => x.IsReaded = true);
-                    await this.context.SaveChangesAsync();
                     return Result.Ok();
                 }
 

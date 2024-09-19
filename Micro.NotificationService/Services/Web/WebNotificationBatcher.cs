@@ -14,9 +14,9 @@
 
         private ConcurrentDictionary<string, List<OutNotification>> batchedNotifications = [];
 
-        private Timer timer;
+        private readonly Timer timer;
 
-        private int bactchMaxSize;
+        private readonly int bactchMaxSize;
 
         public WebNotificationBatcher(IHubContext<NotificationsHub> hub, IOptions<SettingsOptions> settings)
         {
