@@ -115,6 +115,7 @@
                 if (notifications.Any())
                 {
                     notifications.ForEach(x => x.IsReaded = true);
+                    this.dataService.Notifications.Update(notifications);
                     return Result.Ok();
                 }
 

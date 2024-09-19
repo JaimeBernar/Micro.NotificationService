@@ -11,7 +11,7 @@
     public class NotificationModuleIntegrationTests : IClassFixture<NotificationServiceFactory>
     {
         private readonly HttpClient client;
-        private readonly Guid userId = Guid.NewGuid();
+        private readonly string userId = Guid.NewGuid().ToString();
 
         public NotificationModuleIntegrationTests(NotificationServiceFactory factory)
         {

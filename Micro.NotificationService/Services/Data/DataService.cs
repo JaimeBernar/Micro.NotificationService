@@ -2,13 +2,18 @@
 {
     using LiteDB;
     using Micro.NotificationService.Models;
+    using Micro.NotificationService.Options;
+    using Microsoft.Extensions.Options;
 
     public class DataService : IDataService
     {       
-        public DataService()
+        public DataService(IOptions<SettingsOptions> settings) : this(settings.Value.DatatabasePathAndName)
         {
-            var path = Path.Combine("..", "..", "Data", "Database.db");
-            this.Database = new LiteDatabase(path);
+        }
+
+        public DataService(string databasePathAndName)
+        {
+            this.Database = new LiteDatabase(databasePathAndName);
 
             //Make sure that the collections exist
             this.Notifications = this.Database.GetCollection<Notification>();
@@ -33,7 +38,7 @@
         public ILiteCollection<Subscription> Subscriptions { get; }
 
         public void Dispose()
-        {
+        {            
             this.Database?.Dispose();
         }
     }
