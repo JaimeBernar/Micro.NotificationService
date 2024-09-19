@@ -1,17 +1,17 @@
 namespace Micro.NotificationService
 {
     using Carter;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Hosting;
     using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
-    using Microsoft.Extensions.Options;
     using Micro.NotificationService.Options;
-    using Serilog;
-    using Micro.NotificationService.Services;
+    using Micro.NotificationService.Services.Hub;
+    using Microsoft.Data.Sqlite;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Data.Sqlite;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Options;
+    using Serilog;
 
     public partial class Program
     {
@@ -20,7 +20,7 @@ namespace Micro.NotificationService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-    
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -53,7 +53,7 @@ namespace Micro.NotificationService
                 logger = app.Services.GetRequiredService<ILogger<Program>>();
                 var settings = app.Services.GetRequiredService<IOptions<SettingsOptions>>().Value;
                 var serverOptions = app.Services.GetRequiredService<IOptions<EmailServerOptions>>().Value;
-                                
+
                 logger.LogInformation("Logging Configuration");
                 logger.LogInformation("Settings:");
                 logger.LogInformation($"{nameof(SettingsOptions.EmailNotificationsActive)}={settings.EmailNotificationsActive}");
@@ -67,7 +67,7 @@ namespace Micro.NotificationService
                 logger.LogInformation($"{nameof(EmailServerOptions.EmailSenderAddress)}={serverOptions.EmailSenderAddress}");
 
                 EnsureCreatedAndApplyMigrations(app);
-  
+
                 app.UseCors("Cors");
                 app.MapCarter();
 
@@ -98,12 +98,12 @@ namespace Micro.NotificationService
         {
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<Context>(); 
+                var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
 
                 if (dbContext.Database.GetPendingMigrations().Any())
                 {
                     dbContext.Database.Migrate();
-                }     
+                }
             }
         }
     }

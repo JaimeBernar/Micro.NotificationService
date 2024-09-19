@@ -1,18 +1,18 @@
 ﻿namespace Micro.NotificationService.Services.Orchestrators
 {
     using FluentResults;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Options;
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Common.Enums;
     using Micro.NotificationService.Data;
+    using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
-    using Micro.NotificationService.Extensions;
-    using System.Net;
     using Micro.NotificationService.Services.Email;
-    using Micro.NotificationService.Services.Web;
     using Micro.NotificationService.Services.Translator;
+    using Micro.NotificationService.Services.Web;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
+    using System.Net;
 
     public class NotificationOrchestrator : INotificationOrchestrator
     {
@@ -43,7 +43,10 @@
         {
             try
             {
-                var result = await this.context.Notifications.Where(x => x.UserId == userId && x.IsReaded == false).ToArrayAsync();
+                var result = await this.context.Notifications.AsNoTracking()
+                                               .Where(x => x.UserId == userId && x.IsReaded == false)
+                                               .ToArrayAsync();
+
                 return Result.Ok<IEnumerable<Notification>>(result);
             }
             catch (Exception ex)

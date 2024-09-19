@@ -1,11 +1,9 @@
 ﻿namespace Micro.NotificationService.Tests.IntegrationTests
 {
-    using FluentResults;
     using Micro.NotificationService.Common.DTOs;
     using Micro.NotificationService.Common.Enums;
     using Micro.NotificationService.Models;
     using System.Net;
-    using System.Net.Http.Json;
     using System.Text;
     using System.Text.Json;
     using Xunit;
@@ -95,7 +93,7 @@
             };
 
             var json = JsonSerializer.Serialize(notification);
-            var content = new StringContent(json, Encoding.UTF8 ,"application/json");
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var result = await this.client.PostAsync("api/v1/notifications", content);
 

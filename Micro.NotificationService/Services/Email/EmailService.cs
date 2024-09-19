@@ -2,10 +2,10 @@
 {
     using FluentResults;
     using MailKit.Net.Smtp;
-    using Microsoft.Extensions.Options;
-    using MimeKit;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Options;
+    using Microsoft.Extensions.Options;
+    using MimeKit;
 
     public class EmailService : IEmailService, IDisposable
     {

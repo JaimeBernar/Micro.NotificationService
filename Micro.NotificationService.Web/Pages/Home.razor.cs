@@ -96,16 +96,16 @@ namespace Micro.NotificationService.Web.Pages
                 //2.Remove it from list
                 this.notifications.Clear();
                 await this.InvokeAsync(this.StateHasChanged);
-            }          
+            }
         }
 
         private async Task OnConnectedClicked()
         {
-            if(this.HubConnection.State == HubConnectionState.Connected)
+            if (this.HubConnection.State == HubConnectionState.Connected)
             {
                 await this.HubConnection.StopAsync();
             }
-            else if(this.HubConnection.State == HubConnectionState.Disconnected)
+            else if (this.HubConnection.State == HubConnectionState.Disconnected)
             {
                 await this.HubConnection.StartAsync();
             }

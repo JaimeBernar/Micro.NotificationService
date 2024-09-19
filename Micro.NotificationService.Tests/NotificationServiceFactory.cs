@@ -1,17 +1,14 @@
 ﻿namespace Micro.NotificationService.Tests
 {
     using FluentResults;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Models;
     using Micro.NotificationService.Services.Email;
     using Micro.NotificationService.Services.Web;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
     using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
-    using System.Threading.Tasks;
 
     public class NotificationServiceFactory : WebApplicationFactory<Program>
     {

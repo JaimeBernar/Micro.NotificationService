@@ -1,7 +1,6 @@
 ﻿namespace Micro.NotificationService.Extensions
 {
     using Carter;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Modules;
     using Micro.NotificationService.Options;
     using Micro.NotificationService.Services.Email;
@@ -10,7 +9,6 @@
     using Micro.NotificationService.Services.Web;
     using Micro.NotificationService.Validators;
     using Microsoft.AspNetCore.ResponseCompression;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using System.Text;
 

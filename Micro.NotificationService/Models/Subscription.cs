@@ -1,10 +1,10 @@
 ﻿namespace Micro.NotificationService.Models
 {
+    using Micro.NotificationService.Common.Enums;
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Diagnostics.CodeAnalysis;
-    using Micro.NotificationService.Common.Enums;
 
     [Table(nameof(Subscription))]
     public class Subscription : Entity
