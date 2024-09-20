@@ -10,18 +10,18 @@ Micro.NotificationService is a micro Notification Service for developers:
 * Configure your application to use Email or Web notifications
 * Well documented (swagger) Rest API
 * Batched notifications for improved performance
-* SQLite database to store the notifications
+* LiteDB database to store the notifications
 * Notifications by subscription or direct notifications to an specific user
 * Real time notifications using SignalR
 
 ### Installation
 
 #### Docker
-[Run it from Docker Hub](jbernar/micro.notification-service) or using the provided [Dockerfile](Dockerfile)
+Create a new image using the provided [Dockerfile](Dockerfile)
 
 ### Contributing
 
-Feel free to contribute
+Feel free to contribute or to open new issues
 
 ### Licence
 
