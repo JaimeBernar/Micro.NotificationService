@@ -13,22 +13,26 @@
 
         public DataService(string databasePathAndName)
         {
+            var directoryPath = Path.GetDirectoryName(databasePathAndName);
+
+            if (directoryPath != null && !Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
             this.Database = new LiteDatabase(databasePathAndName);
 
             //Make sure that the collections exist
-            this.Notifications = this.Database.GetCollection<Notification>();
-            this.Notifications.EnsureIndex(x => x.Id);
+            this.Notifications = this.Database.GetCollection<Notification>();            
             this.Notifications.EnsureIndex(x => x.NotificationType);
             this.Notifications.EnsureIndex(x => x.Channel);
             this.Notifications.EnsureIndex(x => x.UserId);
-            this.Notifications.EnsureIndex(x => x.EmailAddress);
+
 
             this.Subscriptions = this.Database.GetCollection<Subscription>();
-            this.Subscriptions.EnsureIndex(x => x.Id);
             this.Subscriptions.EnsureIndex(x => x.NotificationType);
             this.Subscriptions.EnsureIndex(x => x.Channel);
             this.Subscriptions.EnsureIndex(x => x.UserId);
-            this.Subscriptions.EnsureIndex(x => x.EmailAddress);
         }
 
         public LiteDatabase Database { get; set; }
