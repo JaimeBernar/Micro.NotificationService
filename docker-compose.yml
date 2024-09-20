@@ -7,6 +7,7 @@ services:
     environment:
       - EmailServer__Host=mailhog
       - EmailServer__Port=1025
+      - Settings__EmailNotificationsActive=true
     networks:
       - micro-notification-service
 

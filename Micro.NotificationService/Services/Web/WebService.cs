@@ -2,6 +2,7 @@
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
+    using Micro.NotificationService.Common.Enums;
     using Micro.NotificationService.Models;
     using System.Threading.Tasks;
 
@@ -21,9 +22,9 @@
         {
             try
             {
-                var webNotifications = notifications.Where(x => x.Channel == Common.Enums.NotificationChannel.Web);
+                var webNotifications = notifications.Where(x => x.Channel == NotificationChannel.Web);
 
-                if (notifications.Any(x => x.Channel != Common.Enums.NotificationChannel.Web))
+                if (notifications.Any(x => x.Channel != NotificationChannel.Web))
                 {
                     this.logger.LogWarning("Notifications that should NOT produce web notifications are being passed to {name}", nameof(WebService));
                 }
@@ -54,7 +55,7 @@
             }
             catch (Exception ex)
             {
-                var message = string.Format("An error ocurred while sending the Web Notification. {error}", ex);
+                var message = string.Format("An error ocurred while sending the Web Notifications. {0}", ex);
                 this.logger.LogError(message);
                 return Result.Fail(message);
             }

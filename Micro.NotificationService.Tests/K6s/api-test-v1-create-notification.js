@@ -6,8 +6,8 @@ const baseUrl = 'http://localhost:8085'; //Docker
 
 export let options = {
     stages: [
-        { duration: '60s', target: 1 },  
-        //{ duration: '50s', target: 20 }, 
+        { duration: '10s', target: 20 },  
+        { duration: '50s', target: 20 }, 
     ],
 };
 

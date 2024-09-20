@@ -45,7 +45,10 @@
 
                 this.logger.LogInformation("Sending {count} messages", messagesList.Count);
 
-                await this.smtpClient.ConnectAsync(this.emailServerOptions.Host, this.emailServerOptions.Port);
+                if (!this.smtpClient.IsConnected)
+                {
+                    await this.smtpClient.ConnectAsync(this.emailServerOptions.Host, this.emailServerOptions.Port);
+                }
 
                 var tasks = messagesList.Select(m => this.smtpClient.SendAsync(m));
 
@@ -57,10 +60,6 @@
                 var message = string.Format("An error ocurred while sending the Email. {error}", ex);
                 this.logger.LogError(message);
                 return Result.Fail(message);
-            }
-            finally
-            {
-                await this.smtpClient.DisconnectAsync(true);
             }
         }
 
@@ -97,6 +96,7 @@
 
         public void Dispose()
         {
+            this.smtpClient.Disconnect(true);
             this.smtpClient.Dispose();
         }
     }

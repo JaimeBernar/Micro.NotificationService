@@ -1,45 +1,45 @@
 ﻿namespace Micro.NotificationService.Tests.Tests
 {
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Models;
+    using Micro.NotificationService.Services.Data;
     using Micro.NotificationService.Services.Orchestrators;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
-    public class SubscriptionOrchestratorTestFixture
+    public class SubscriptionOrchestratorTestFixture : IDisposable
     {
-        private Context context;
+        private DataService dataService;
         private SubscriptionOrchestrator orchestrator;
         private Mock<ILogger<SubscriptionOrchestrator>> logger;
         private Subscription subscription;
-        private Guid userId;
+        private string userId;
 
         public SubscriptionOrchestratorTestFixture()
         {
-            var options = new DbContextOptionsBuilder<Context>()
-                .UseSqlite("DataSource=:memory:")
-                .Options;
+            this.dataService = new DataService(Path.Combine(Directory.GetCurrentDirectory(), "subscription-tests.db"));
+            this.dataService.Notifications.DeleteAll();
+            this.dataService.Subscriptions.DeleteAll();
 
-            this.context = new Context(options);
-            this.context.Database.OpenConnection(); // Open connection to the SQLite in-memory DB
-            this.context.Database.EnsureCreated();
-
-            this.userId = Guid.NewGuid();
+            this.userId = Guid.NewGuid().ToString();
 
             this.logger = new Mock<ILogger<SubscriptionOrchestrator>>();
 
-            this.orchestrator = new SubscriptionOrchestrator(this.context, this.logger.Object);
+            this.orchestrator = new SubscriptionOrchestrator(this.dataService, this.logger.Object);
+        }
+
+        public void Dispose()
+        {
+            this.dataService.Dispose();
         }
 
         [Fact]
-        public async Task VerifyGetUserSubscriptions()
+        public void VerifyGetUserSubscriptions()
         {
-            await this.VerifyProcessSubscriptions();
+            this.VerifyProcessSubscriptions();
 
-            var result = await this.orchestrator.GetUserSubscriptions(this.userId);
+            var result = this.orchestrator.GetUserSubscriptions(this.userId);
 
             Assert.True(result.IsSuccess);
 
@@ -49,7 +49,7 @@
         }
 
         [Fact]
-        public async Task VerifyProcessSubscriptions()
+        public void VerifyProcessSubscriptions()
         {
             var message = new SubscriptionMessage()
             {
@@ -60,35 +60,35 @@
                 Channel = Common.Enums.NotificationChannel.Email,
             };
 
-            var result = await this.orchestrator.ProcessSubscriptions([message]);
+            var result = this.orchestrator.ProcessSubscriptions([message]);
 
             Assert.Multiple(() =>
             {
                 Assert.True(result.IsSuccess);
-                Assert.Equal(1, this.context.Subscriptions.Count());
+                Assert.Equal(1, this.dataService.Subscriptions.Count());
             });
 
             this.subscription = result.Value.First();
 
             message.Channel = Common.Enums.NotificationChannel.Web;
 
-            result = await this.orchestrator.ProcessSubscriptions([message]);
+            result = this.orchestrator.ProcessSubscriptions([message]);
 
             Assert.Multiple(() =>
             {
                 Assert.True(result.IsSuccess);
-                Assert.Equal(2, this.context.Subscriptions.Count());
+                Assert.Equal(2, this.dataService.Subscriptions.Count());
             });
         }
 
         [Fact]
-        public async Task VerifyDeleteSubscriptions()
+        public void VerifyDeleteSubscriptions()
         {
-            await this.VerifyGetUserSubscriptions();
+            this.VerifyGetUserSubscriptions();
 
-            await this.orchestrator.DeleteSubscriptions([this.subscription.Id]);
+            this.orchestrator.DeleteSubscriptions([this.subscription.Id]);
 
-            var result = await this.orchestrator.GetUserSubscriptions(this.userId);
+            var result = this.orchestrator.GetUserSubscriptions(this.userId);
 
             Assert.True(result.IsSuccess);
 

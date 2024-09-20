@@ -14,12 +14,15 @@
 
         private ConcurrentDictionary<string, List<OutNotification>> batchedNotifications = [];
 
-        private Timer timer;
+        private readonly Timer timer;
 
-        private int bactchMaxSize;
+        private readonly int bactchMaxSize;
 
-        public WebNotificationBatcher(IHubContext<NotificationsHub> hub, IOptions<SettingsOptions> settings)
+        private readonly ILogger<WebNotificationBatcher> logger;
+
+        public WebNotificationBatcher(ILogger<WebNotificationBatcher> logger, IHubContext<NotificationsHub> hub, IOptions<SettingsOptions> settings)
         {
+            this.logger = logger;
             var settingsValue = settings.Value;
             this.bactchMaxSize = settingsValue.BatchSize;
             this.hub = hub;
@@ -50,7 +53,10 @@
             {
                 return;
             }
-                      
+
+            var total = this.batchedNotifications.SelectMany(x => x.Value).ToList().Count;
+            this.logger.LogInformation("Processing {count} Batched Notifications", total);
+
             var tasks = new List<Task>();
 
             foreach (var (userId, notifications) in batchedNotifications)

@@ -7,12 +7,12 @@
 
     public interface INotificationOrchestrator
     {
-        Task<Result<IEnumerable<Notification>>> GetUserNotifications(Guid userId);
+        Result<IEnumerable<Notification>> GetUserNotifications(string userId);
 
         Task<Result> ProcessNotifications(IEnumerable<NotificationMessage> notificationMessages);
 
         Task<Result> ProcessDirectNotifications(IEnumerable<DirectNotificationMessage> notificationMessages);
 
-        Task<Result> DeleteNotifications(IEnumerable<Guid> ids);
+        Result DeleteNotifications(IEnumerable<int> ids);
     }
 }

@@ -20,7 +20,7 @@
 
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/v1/subscriptions/{userId:guid}", this.GetUserSubscriptions)
+            app.MapGet("api/v1/subscriptions/{userId}", this.GetUserSubscriptions)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError)
                .Produces<IEnumerable<Subscription>>();
@@ -35,23 +35,23 @@
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError);
 
-            app.MapDelete("api/v1/subscriptions/{id:guid}", this.DeleteSubscription)
+            app.MapDelete("api/v1/subscriptions/{id:int}", this.DeleteSubscription)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapDelete("api/v1/subscriptions", this.DeleteSubscriptions)
-               .Accepts<IEnumerable<Guid>>("application/json")
+               .Accepts<IEnumerable<int>>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
         }
 
-        public async Task GetUserSubscriptions(HttpContext context, Guid userId, [FromServices] ISubscriptionOrchestrator orchestrator)
+        public async Task GetUserSubscriptions(HttpContext context, string userId, [FromServices] ISubscriptionOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.GetUserSubscriptions(userId);
+                var result = orchestrator.GetUserSubscriptions(userId);
 
                 if (result.IsFailed)
                 {
@@ -80,7 +80,7 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessSubscriptions([subscription]);
+                var result = orchestrator.ProcessSubscriptions([subscription]);
 
                 if (result.IsFailed)
                 {
@@ -109,7 +109,7 @@
                     return;
                 }
 
-                var result = await orchestrator.ProcessSubscriptions(subscriptions);
+                var result = orchestrator.ProcessSubscriptions(subscriptions);
 
                 if (result.IsFailed)
                 {
@@ -126,11 +126,11 @@
             }
         }
 
-        public async Task DeleteSubscription(HttpContext context, Guid id, [FromServices] ISubscriptionOrchestrator orchestrator)
+        public async Task DeleteSubscription(HttpContext context, int id, [FromServices] ISubscriptionOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.DeleteSubscriptions([id]);
+                var result = orchestrator.DeleteSubscriptions([id]);
 
                 if (result.IsFailed)
                 {
@@ -147,11 +147,11 @@
             }
         }
 
-        public async Task DeleteSubscriptions(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] ISubscriptionOrchestrator orchestrator)
+        public async Task DeleteSubscriptions(HttpContext context, [FromBody] IEnumerable<int> ids, [FromServices] ISubscriptionOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.DeleteSubscriptions(ids);
+                var result = orchestrator.DeleteSubscriptions(ids);
 
                 if (result.IsFailed)
                 {

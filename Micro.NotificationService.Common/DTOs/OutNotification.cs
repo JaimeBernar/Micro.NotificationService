@@ -4,7 +4,7 @@
 
     public class OutNotification
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         public string Header { get; set; }
 

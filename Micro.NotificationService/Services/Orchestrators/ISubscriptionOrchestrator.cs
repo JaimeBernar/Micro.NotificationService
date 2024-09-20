@@ -6,10 +6,10 @@
 
     public interface ISubscriptionOrchestrator
     {
-        Task<Result<IEnumerable<Subscription>>> GetUserSubscriptions(Guid userId);
+        Result<IEnumerable<Subscription>> GetUserSubscriptions(string userId);
 
-        Task<Result<IEnumerable<Subscription>>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions);
+        Result<IEnumerable<Subscription>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions);
 
-        Task<Result> DeleteSubscriptions(IEnumerable<Guid> subscriptionIds);
+        Result DeleteSubscriptions(IEnumerable<int> subscriptionIds);
     }
 }

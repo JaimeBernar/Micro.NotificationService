@@ -13,5 +13,7 @@
         public int BatchTime { get; set; }
 
         public string NotificationsHubPath { get; set; }
+
+        public string DatatabasePathAndName { get; set; }
     }
 }

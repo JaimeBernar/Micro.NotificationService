@@ -2,68 +2,56 @@
 {
     using FluentResults;
     using Micro.NotificationService.Common.DTOs;
-    using Micro.NotificationService.Data;
     using Micro.NotificationService.Extensions;
     using Micro.NotificationService.Models;
-    using Microsoft.EntityFrameworkCore;
+    using Micro.NotificationService.Services.Data;
     using System.Net;
 
     public class SubscriptionOrchestrator : ISubscriptionOrchestrator
     {
-        private readonly Context context;
+        private readonly IDataService dataService;
 
         private readonly ILogger<SubscriptionOrchestrator> logger;
 
-        public SubscriptionOrchestrator(Context context, ILogger<SubscriptionOrchestrator> logger)
+        public SubscriptionOrchestrator(IDataService dataService, ILogger<SubscriptionOrchestrator> logger)
         {
-            this.context = context;
+            this.dataService = dataService;
             this.logger = logger;
         }
 
-        public async Task<Result<IEnumerable<Subscription>>> GetUserSubscriptions(Guid userId)
+        public Result<IEnumerable<Subscription>> GetUserSubscriptions(string userId)
         {
             try
             {
-                var result = await this.context.Subscriptions.AsNoTracking()
-                                               .Where(x => x.UserId == userId)
-                                               .ToArrayAsync();
+                var result = this.dataService.Subscriptions.Query()
+                                 .Where(x => x.UserId == userId)
+                                 .ToEnumerable();
 
-                return Result.Ok<IEnumerable<Subscription>>(result);
+                return Result.Ok(result);
             }
             catch (Exception ex)
             {
-                var message = string.Format("An Error ocurred while getting user subscriptions. {error}", ex);
+                var message = string.Format("An Error ocurred while getting user subscriptions. {0}", ex);
                 this.logger.LogError(message);
                 return Result.Fail(message);
             }
         }
 
-        public async Task<Result<IEnumerable<Subscription>>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions)
+        public Result<IEnumerable<Subscription>> ProcessSubscriptions(IEnumerable<SubscriptionMessage> subscriptions)
         {
             try
             {
                 var result = new List<Subscription>();
-
-                //var existingSubscriptions = await this.context.Subscriptions.Where(s => 
-                //                            subscriptions.Any(sm => sm.UserId == s.UserId && 
-                //                                              sm.NotificationType == s.NotificationType &&
-                //                                              sm.Channel == s.Channel)).ToArrayAsync();
-
-                //foreach(var existingSubscription in existingSubscriptions)
-                //{
-                //    existingSubscription.IsSubscribed = true;
-                //    result.Add(existingSubscription);
-                //}
 
                 // Create a list of anonymous objects that combine the three fields for comparison
                 var subscriptionKeys = subscriptions
                     .Select(s => new { s.UserId, s.NotificationType, s.Channel })
                     .ToList();
 
-                var whereClause = string.Join(" OR ", subscriptions.Select(s => $"(UserId={s.UserId} AND NotificationType='{s.NotificationType}' AND Channel='{s.Channel}')"));
-
                 // Fetch all existing subscriptions where the combination of UserId, NotificationType, and Channel match
-                var existingSubscriptions = await this.context.Subscriptions.FromSqlRaw("SELECT * FROM Subscriptions WHERE " + whereClause).ToListAsync();
+                var existingSubscriptions = this.dataService.Subscriptions.Query()
+                    .Where(s => subscriptionKeys.Contains(new { s.UserId, s.NotificationType, s.Channel }))
+                    .ToList();
 
                 // Update existing subscriptions
                 foreach (var existingSubscription in existingSubscriptions)
@@ -80,38 +68,19 @@
                 }
 
                 // Handle new subscriptions that do not exist in the database
-                var newSubscriptions = subscriptions.Where(sm => !existingSubscriptions.Any(es =>
-                    es.UserId == sm.UserId && es.NotificationType == sm.NotificationType && es.Channel == sm.Channel)).ToList();
+                var newSubscriptions = subscriptions.Where(sm => !existingSubscriptions.Any(es => 
+                                                                                            es.UserId == sm.UserId &&
+                                                                                            es.NotificationType == sm.NotificationType &&
+                                                                                            es.Channel == sm.Channel))
+                                                                                            .ToList();
 
                 foreach (var newSubscription in newSubscriptions)
                 {
                     var model = newSubscription.ToModel();
                     result.Add(model);
-                    this.context.Subscriptions.Add(model);
+                    this.dataService.Subscriptions.Insert(model);
                 }
 
-                //foreach (var subscription in subscriptions)
-                //{
-                //    // Check if the subscription already exist
-                //    var existingSubscription = await this.context.Subscriptions.FirstOrDefaultAsync(p =>
-                //                                          p.UserId == subscription.UserId &&
-                //                                          p.NotificationType == subscription.NotificationType &&
-                //                                          p.Channel == subscription.Channel);
-
-                //    if (existingSubscription != null)
-                //    {
-                //        existingSubscription.IsSubscribed = subscription.IsSubscribed;
-                //        result.Add(existingSubscription);
-                //    }
-                //    else
-                //    {
-                //        var model = subscription.ToModel();
-                //        result.Add(model);
-                //        this.context.Subscriptions.Add(model);
-                //    }
-                //}
-
-                await this.context.SaveChangesAsync();
                 return Result.Ok(result.AsEnumerable());
             }
             catch (Exception ex)
@@ -122,16 +91,17 @@
             }
         }
 
-        public async Task<Result> DeleteSubscriptions(IEnumerable<Guid> subscriptionIds)
+        public Result DeleteSubscriptions(IEnumerable<int> subscriptionIds)
         {
             try
             {
-                var subscriptions = await this.context.Subscriptions.Where(s => subscriptionIds.Contains(s.Id)).ToListAsync();
+                var subscriptions = this.dataService.Subscriptions.Query()
+                                        .Where(s => subscriptionIds.Contains(s.Id))
+                                        .ToList();
 
                 if (subscriptions.Any())
                 {
                     subscriptions.ForEach(s => s.IsSubscribed = false);
-                    await context.SaveChangesAsync();
                     return Result.Ok();
                 }
 

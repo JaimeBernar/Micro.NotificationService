@@ -21,7 +21,7 @@
 
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/v1/notifications/{userId:guid}", this.GetUserNotifications)
+            app.MapGet("api/v1/notifications/{userId}", this.GetUserNotifications)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.InternalServerError)
                .Produces<IEnumerable<Notification>>();
@@ -50,23 +50,23 @@
                .Produces((int)HttpStatusCode.UnprocessableEntity)
                .Produces((int)HttpStatusCode.InternalServerError);
 
-            app.MapDelete("api/v1/notifications/{id:guid}", this.DeleteNotification)
+            app.MapDelete("api/v1/notifications/{id:int}", this.DeleteNotification)
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
 
             app.MapDelete("api/v1/notifications", this.DeleteNotifications)
-               .Accepts<IEnumerable<Guid>>("application/json")
+               .Accepts<IEnumerable<int>>("application/json")
                .Produces((int)HttpStatusCode.OK)
                .Produces((int)HttpStatusCode.NotFound)
                .Produces((int)HttpStatusCode.InternalServerError);
         }
 
-        public async Task GetUserNotifications(HttpContext context, Guid userId, [FromServices] INotificationOrchestrator orchestrator)
+        public async Task GetUserNotifications(HttpContext context, string userId, [FromServices] INotificationOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.GetUserNotifications(userId);
+                var result = orchestrator.GetUserNotifications(userId);
 
                 if (result.IsFailed)
                 {
@@ -171,11 +171,11 @@
             }
         }
 
-        public async Task DeleteNotification(HttpContext context, Guid id, [FromServices] INotificationOrchestrator orchestrator)
+        public async Task DeleteNotification(HttpContext context, int id, [FromServices] INotificationOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.DeleteNotifications([id]);
+                var result = orchestrator.DeleteNotifications([id]);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
@@ -185,11 +185,11 @@
             }
         }
 
-        public async Task DeleteNotifications(HttpContext context, [FromBody] IEnumerable<Guid> ids, [FromServices] INotificationOrchestrator orchestrator)
+        public async Task DeleteNotifications(HttpContext context, [FromBody] IEnumerable<int> ids, [FromServices] INotificationOrchestrator orchestrator)
         {
             try
             {
-                var result = await orchestrator.DeleteNotifications(ids);
+                var result = orchestrator.DeleteNotifications(ids);
                 await context.Response.Negotiate(result);
             }
             catch (Exception ex)
